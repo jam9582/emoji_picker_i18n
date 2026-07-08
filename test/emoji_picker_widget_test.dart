@@ -46,4 +46,57 @@ void main() {
     ));
     expect(find.text('결과 없음'), findsOneWidget);
   });
+
+  group('검색창', () {
+    testWidgets('한국어 타이핑 즉시 그리드가 좁혀진다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      expect(find.text('😀'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), '고양이');
+      await tester.pump();
+
+      expect(find.text('🐈️'), findsOneWidget); // 1순위 결과
+      expect(find.text('😀'), findsNothing); // 무관한 이모지는 사라짐
+    });
+
+    testWidgets('초성 검색도 화면에서 동작한다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.enterText(find.byType(TextField), 'ㄱㅇㅇ');
+      await tester.pump();
+
+      expect(find.text('🐈️'), findsOneWidget);
+    });
+
+    testWidgets('지우기 버튼을 누르면 전체 그리드로 복원된다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.enterText(find.byType(TextField), '고양이');
+      await tester.pump();
+      expect(find.text('😀'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pump();
+
+      expect(find.text('😀'), findsOneWidget);
+    });
+
+    testWidgets('결과 없는 검색어는 안내 문구를 보여준다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          noResultsText: '결과 없음',
+        ),
+      ));
+      await tester.enterText(find.byType(TextField), '쀍쀍쀍');
+      await tester.pump();
+
+      expect(find.text('결과 없음'), findsOneWidget);
+    });
+  });
 }
