@@ -36,7 +36,7 @@ void main() {
   });
 
   test('조합(ZWJ) 이모지도 완성된 한국어 번역을 가진다', () {
-    // 기존 라이브러리가 실패하던 케이스 (기획서 3-1절 문제점 6번)
+    // 조합(ZWJ) 이모지의 번역이 온전하게 수록되는지 확인
     final hits = rawSearch(kEmojiLocaleKo, '수영하는 여자');
     expect(hits, contains('🏊‍♀️'));
   });

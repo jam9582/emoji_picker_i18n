@@ -2,7 +2,7 @@
 ///
 /// [char]는 화면 표시용 원본 문자열로, 이모지 표시 지정자(U+FE0F) 등이
 /// 붙어 있을 수 있다. 외부 문자열과 비교할 때는 normalize.dart 의
-/// normalizeEmoji 를 거칠 것 (기획서 5-1절).
+/// normalizeEmoji 를 거칠 것.
 class Emoji {
   const Emoji({
     required this.char,

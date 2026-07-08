@@ -2,7 +2,7 @@ import '../emoji.dart';
 import 'hangul.dart';
 import 'normalize.dart';
 
-/// 다국어 이모지 검색 엔진 (기획서 5-1절).
+/// 다국어 이모지 검색 엔진.
 ///
 /// - 포함 검색: 키워드에 검색어가 포함되면 매칭
 /// - 한글 검색: 초성('ㄱㅇㅇ')·혼합('고ㅇ')·치다 만 입력('고양ㅇ') 지원
@@ -75,8 +75,8 @@ class EmojiSearch {
 
   /// 외부 출처의 이모지 문자열로 데이터를 역조회한다 (표기 차이 무시).
   ///
-  /// 앱에 저장된 선택값 강조, 피부색 변형 조회 등에 사용 (기획서 5-1절
-  /// 적용 지점 ⓑ·ⓒ). 데이터에 없는 이모지면 null.
+  /// 앱에 저장된 선택값 강조, 피부색 변형 조회 등에 사용.
+  /// 데이터에 없는 이모지면 null.
   Emoji? findByChar(String emojiChar) => _charIndex[normalizeEmoji(emojiChar)];
 }
 

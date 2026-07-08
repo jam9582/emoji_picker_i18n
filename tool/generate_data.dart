@@ -1,4 +1,4 @@
-// 데이터 생성 파이프라인 (기획서 5-4절)
+// 데이터 생성 파이프라인
 //
 // tool/cache/<locale>.json (emojibase-data compact 형식)을 읽어
 // 라이브러리용 Dart 데이터 파일을 생성한다.

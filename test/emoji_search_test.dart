@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  group('표기 정규화 (기획서 5-1절 적용 지점)', () {
+  group('표기 정규화', () {
     test('FE0F 유무가 달라도 같은 이모지로 판정', () {
       expect(sameEmoji('🐈️', '🐈'), isTrue);
       expect(sameEmoji('🐱', '🐶'), isFalse);

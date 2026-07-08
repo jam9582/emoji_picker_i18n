@@ -1,39 +1,31 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# emoji_picker_i18n
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+> 🚧 **Work in progress** — not yet published to pub.dev. APIs may change without notice.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+A multilingual emoji picker for Flutter with **localized emoji search in 28+ languages**, powered by Unicode CLDR data (via [Emojibase](https://emojibase.dev)) — the same data source Apple and Google keyboards use for emoji search.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Why another emoji picker?
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Existing Flutter emoji pickers support search in only a handful of languages. If your users speak Korean, Thai, Vietnamese, Ukrainian, ... they can't search emoji in their own language. This package aims to fix that — including niceties like Korean *chosung* search:
 
 ```dart
-const like = 'sample';
+search.search('고양이'); // 🐈 🐱 😺 ...
+search.search('ㄱㅇㅇ');  // 🐈 🐱 ... (initial-consonant search)
+search.search('고ㅇ');   // 🐈 ... (works mid-typing, like contact apps)
+search.search('cat');    // 🐈 🐱 ... (all loaded locales searched at once)
 ```
 
-## Additional information
+Only the locales you import are compiled into your app — unused languages are tree-shaken away.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## Status
+
+- [x] Data pipeline: Emojibase → shared core + per-locale keyword data (ko, en; more to come)
+- [x] Search engine: substring matching, Korean chosung/jamo matching, exact > prefix > contains ranking
+- [x] Emoji string normalization utilities (`sameEmoji('🐈️', '🐈') == true`)
+- [ ] Picker UI widget (in progress)
+- [ ] Runtime locale pack downloads
+- [ ] pub.dev release
+
+## License
+
+MIT

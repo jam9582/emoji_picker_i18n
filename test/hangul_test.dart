@@ -26,7 +26,7 @@ void main() {
     });
   });
 
-  group('한글 매칭 (기획서 5-1절 시나리오)', () {
+  group('한글 매칭', () {
     test('초성만: ㄱㅇㅇ → 고양이', () {
       expect(matchesHangul('고양이', 'ㄱㅇㅇ'), isTrue);
       expect(matchesHangul('새끼 고양이', 'ㄱㅇㅇ'), isTrue); // 중간 시작
