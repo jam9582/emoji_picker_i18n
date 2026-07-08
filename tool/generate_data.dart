@@ -123,6 +123,14 @@ const List<String> $varName = [
 $lines
 ];
 ''');
+
+  // 사용자용 공개 import 경로: package:emoji_picker_i18n/locales/<locale>.dart
+  Directory('lib/locales').createSync(recursive: true);
+  File('lib/locales/$locale.dart').writeAsStringSync('''
+// GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
+
+export '../src/data/emoji_locale_$locale.dart';
+''');
 }
 
 String _escape(String s) =>
