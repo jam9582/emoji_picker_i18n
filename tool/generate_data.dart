@@ -1,0 +1,133 @@
+// 데이터 생성 파이프라인 (기획서 5-4절)
+//
+// tool/cache/<locale>.json (emojibase-data compact 형식)을 읽어
+// 라이브러리용 Dart 데이터 파일을 생성한다.
+//
+//   - lib/src/data/emoji_common.dart      : 언어 무관 공통 데이터 1벌
+//   - lib/src/data/emoji_locale_<xx>.dart : 언어별 이름·키워드
+//
+// 사용법:
+//   dart run tool/generate_data.dart          # cache의 모든 언어 처리
+//   dart run tool/generate_data.dart ko en    # 지정 언어만 처리
+//
+// 형식 규칙:
+//   공통:   'unicode|group' 또는 'unicode|group|skin1,skin2,...'
+//   언어별: 'label|tag1|tag2|...'  (공통 데이터와 같은 인덱스 순서)
+//
+// group 2(피부색 등 부품)와 group 없는 항목은 피커에 표시할 수 없으므로 제외.
+
+import 'dart:convert';
+import 'dart:io';
+
+const cacheDir = 'tool/cache';
+const outDir = 'lib/src/data';
+const componentGroup = 2;
+
+void main(List<String> args) {
+  final locales = args.isNotEmpty
+      ? args
+      : Directory(cacheDir)
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.json'))
+          .map((f) => f.uri.pathSegments.last.replaceAll('.json', ''))
+          .toList()
+    ..sort();
+
+  if (locales.isEmpty) {
+    stderr.writeln('tool/cache 에 emojibase compact json이 없습니다.');
+    exit(1);
+  }
+
+  // 공통 데이터는 en 기준으로 생성 (없으면 첫 번째 언어 기준)
+  final baseLocale = locales.contains('en') ? 'en' : locales.first;
+  final baseEntries = _loadPickerEntries(baseLocale);
+  final hexOrder = [for (final e in baseEntries) e['hexcode'] as String];
+
+  Directory(outDir).createSync(recursive: true);
+  _writeCommon(baseEntries);
+
+  for (final locale in locales) {
+    _writeLocale(locale, hexOrder);
+  }
+
+  stdout.writeln(
+      '완료: 공통 ${baseEntries.length}개 + 언어 ${locales.length}종 (${locales.join(', ')})');
+}
+
+/// 피커 대상 이모지만 추려 표시 순서(order)로 정렬해 반환.
+List<Map<String, dynamic>> _loadPickerEntries(String locale) {
+  final file = File('$cacheDir/$locale.json');
+  if (!file.existsSync()) {
+    stderr.writeln('없음: ${file.path}');
+    exit(1);
+  }
+  final all = (jsonDecode(file.readAsStringSync()) as List)
+      .cast<Map<String, dynamic>>();
+  final picker = all
+      .where((e) => e['group'] != null && e['group'] != componentGroup)
+      .toList()
+    ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+  return picker;
+}
+
+void _writeCommon(List<Map<String, dynamic>> entries) {
+  final lines = entries.map((e) {
+    final unicode = e['unicode'] as String;
+    final group = e['group'] as int;
+    final skins = (e['skins'] as List?)
+        ?.map((s) => (s as Map)['unicode'] as String)
+        .join(',');
+    final value = skins == null ? '$unicode|$group' : '$unicode|$group|$skins';
+    return "  '${_escape(value)}',";
+  }).join('\n');
+
+  File('$outDir/emoji_common.dart').writeAsStringSync('''
+// GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
+//
+// 형식: 'unicode|group' 또는 'unicode|group|skin1,skin2,...'
+
+const List<String> kEmojiCommon = [
+$lines
+];
+''');
+}
+
+void _writeLocale(String locale, List<String> hexOrder) {
+  final entries = _loadPickerEntries(locale);
+  final byHex = {for (final e in entries) e['hexcode'] as String: e};
+
+  final lines = hexOrder.map((hex) {
+    final e = byHex[hex];
+    if (e == null) {
+      stderr.writeln('경고: $locale 에 $hex 항목 없음 - 빈 값으로 채움');
+      return "  '',";
+    }
+    final label = e['label'] as String;
+    final tags = (e['tags'] as List?)?.cast<String>() ?? const [];
+    for (final part in [label, ...tags]) {
+      if (part.contains('|')) {
+        throw StateError("구분자 '|' 가 데이터에 포함됨: $locale $hex '$part'");
+      }
+    }
+    return "  '${_escape([label, ...tags].join('|'))}',";
+  }).join('\n');
+
+  final varName = 'kEmojiLocale${_capitalize(locale)}';
+  File('$outDir/emoji_locale_$locale.dart').writeAsStringSync('''
+// GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
+//
+// 형식: 'label|tag1|tag2|...' (emoji_common.dart 와 같은 인덱스 순서)
+
+const List<String> $varName = [
+$lines
+];
+''');
+}
+
+String _escape(String s) =>
+    s.replaceAll(r'\', r'\\').replaceAll("'", r"\'").replaceAll(r'$', r'\$');
+
+String _capitalize(String s) => s.isEmpty
+    ? s
+    : s[0].toUpperCase() + s.substring(1).replaceAll('-', '');

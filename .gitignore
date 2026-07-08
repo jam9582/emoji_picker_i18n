@@ -29,3 +29,6 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 /coverage/
+
+# 데이터 파이프라인 다운로드 캐시 (재생성 가능)
+/tool/cache/
