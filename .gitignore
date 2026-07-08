@@ -35,3 +35,4 @@ migrate_working_dir/
 
 # 내부 참고용 문서 (비공개)
 /docs/research_emoji_picker_flutter_ui.md
+/docs/plan.md
