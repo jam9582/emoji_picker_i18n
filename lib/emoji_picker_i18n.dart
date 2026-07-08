@@ -20,3 +20,5 @@ export 'src/data/emoji_common.dart';
 export 'src/emoji.dart';
 export 'src/search/emoji_search.dart';
 export 'src/search/normalize.dart';
+export 'src/ui/emoji_grid.dart';
+export 'src/ui/emoji_picker_i18n.dart';
