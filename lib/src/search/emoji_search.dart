@@ -33,13 +33,25 @@ class EmojiSearch {
       for (var i = 0; i < emojis.length; i++)
         normalizeEmoji(emojis[i].char): emojis[i],
     };
+    _byGroup = {};
+    for (final emoji in emojis) {
+      (_byGroup[emoji.group] ??= []).add(emoji);
+    }
+    groups = _byGroup.keys.toList()..sort();
   }
 
   /// 표준 순서로 정렬된 전체 이모지 (피커 그리드 표시용).
   final List<Emoji> emojis;
 
+  /// 데이터에 존재하는 카테고리(그룹) 번호 목록, 오름차순.
+  late final List<int> groups;
+
   late final List<List<_Keyword>> _entries;
   late final Map<String, Emoji> _charIndex;
+  late final Map<int, List<Emoji>> _byGroup;
+
+  /// 특정 카테고리(그룹)의 이모지 목록 (표준 순서 유지).
+  List<Emoji> emojisOfGroup(int group) => _byGroup[group] ?? const [];
 
   /// [query]에 매칭되는 이모지를 순위순으로 반환한다.
   List<Emoji> search(String query, {int limit = 60}) {

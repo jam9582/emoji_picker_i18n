@@ -122,7 +122,7 @@ void _writeLocale(String locale, List<String> hexOrder) {
 const List<String> $varName = [
 $lines
 ];
-''');
+${_groupNamesConst(locale)}''');
 
   // 사용자용 공개 import 경로: package:emoji_picker_i18n/locales/<locale>.dart
   Directory('lib/locales').createSync(recursive: true);
@@ -131,6 +131,30 @@ $lines
 
 export '../src/data/emoji_locale_$locale.dart';
 ''');
+}
+
+/// 카테고리(그룹) 이름 상수 코드 생성.
+/// `tool/cache/messages_<locale>.json` (emojibase messages 형식)이 있으면
+/// 그룹 번호 순서의 이름 목록을 만들고, 없으면 생략한다.
+String _groupNamesConst(String locale) {
+  final file = File('$cacheDir/messages_$locale.json');
+  if (!file.existsSync()) {
+    stderr.writeln('안내: messages_$locale.json 없음 - 카테고리 이름 생략');
+    return '';
+  }
+  final groups = ((jsonDecode(file.readAsStringSync())
+          as Map<String, dynamic>)['groups'] as List)
+      .cast<Map<String, dynamic>>()
+    ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+  final names =
+      groups.map((g) => "  '${_escape(g['message'] as String)}',").join('\n');
+  return '''
+
+/// 카테고리(그룹) 이름 — 인덱스가 그룹 번호와 일치
+const List<String> kEmojiGroupNames${_capitalize(locale)} = [
+$names
+];
+''';
 }
 
 String _escape(String s) =>

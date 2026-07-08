@@ -1910,3 +1910,17 @@ const List<String> kEmojiLocaleEn = [
   'flag: Scotland|flag|gbsct',
   'flag: Wales|flag|gbwls',
 ];
+
+/// 카테고리(그룹) 이름 — 인덱스가 그룹 번호와 일치
+const List<String> kEmojiGroupNamesEn = [
+  'smileys & emotion',
+  'people & body',
+  'components',
+  'animals & nature',
+  'food & drink',
+  'travel & places',
+  'activities',
+  'objects',
+  'symbols',
+  'flags',
+];

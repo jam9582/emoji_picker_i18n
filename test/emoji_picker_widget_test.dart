@@ -99,4 +99,55 @@ void main() {
       expect(find.text('결과 없음'), findsOneWidget);
     });
   });
+
+  group('카테고리 탭', () {
+    testWidgets('데이터에 있는 그룹 수만큼 탭이 생긴다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      // 컴포넌트(그룹 2) 제외 9개 그룹 → 아이콘 9개
+      expect(search.groups.length, 9);
+      expect(find.byIcon(Icons.pets), findsOneWidget);
+      expect(find.byIcon(Icons.flag), findsOneWidget);
+    });
+
+    testWidgets('동물 탭을 누르면 동물 페이지로 이동한다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      expect(find.text('😀'), findsOneWidget); // 시작은 스마일리
+
+      await tester.tap(find.byIcon(Icons.pets));
+      await tester.pumpAndSettle();
+
+      expect(find.text('🐵'), findsOneWidget); // 동물 그룹 첫 이모지
+      expect(find.text('😀'), findsNothing);
+    });
+
+    testWidgets('검색 중에는 카테고리 바가 숨는다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      expect(find.byIcon(Icons.pets), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), '고양이');
+      await tester.pump();
+      expect(find.byIcon(Icons.pets), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pump();
+      expect(find.byIcon(Icons.pets), findsOneWidget); // 지우면 복귀
+    });
+
+    testWidgets('카테고리 이름이 탭 툴팁으로 붙는다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          categoryLabels: kEmojiGroupNamesKo,
+        ),
+      ));
+      expect(find.byTooltip('동물과 자연'), findsOneWidget);
+    });
+  });
 }
