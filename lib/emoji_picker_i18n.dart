@@ -18,6 +18,7 @@ library;
 
 export 'src/data/emoji_common.dart';
 export 'src/emoji.dart';
+export 'src/recents/recent_emoji_storage.dart';
 export 'src/search/emoji_search.dart';
 export 'src/search/normalize.dart';
 export 'src/ui/emoji_grid.dart';

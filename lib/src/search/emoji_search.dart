@@ -29,9 +29,12 @@ class EmojiSearch {
       }
       return keywords;
     });
+    // 피부색 변형 문자열도 기본형 Emoji로 역조회되도록 함께 색인
     _charIndex = {
-      for (var i = 0; i < emojis.length; i++)
-        normalizeEmoji(emojis[i].char): emojis[i],
+      for (final emoji in emojis) ...{
+        normalizeEmoji(emoji.char): emoji,
+        for (final skin in emoji.skins) normalizeEmoji(skin): emoji,
+      },
     };
     _byGroup = {};
     for (final emoji in emojis) {
@@ -87,7 +90,8 @@ class EmojiSearch {
 
   /// 외부 출처의 이모지 문자열로 데이터를 역조회한다 (표기 차이 무시).
   ///
-  /// 앱에 저장된 선택값 강조, 피부색 변형 조회 등에 사용.
+  /// 피부색 변형 문자열(👋🏽)을 넘겨도 기본형(👋)의 [Emoji]를 돌려준다.
+  /// 앱에 저장된 선택값 강조, 피부색 변형 조회, 최근 사용 기본형 변환에 사용.
   /// 데이터에 없는 이모지면 null.
   Emoji? findByChar(String emojiChar) => _charIndex[normalizeEmoji(emojiChar)];
 }

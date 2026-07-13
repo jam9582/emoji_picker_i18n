@@ -215,4 +215,146 @@ void main() {
       expect(find.text('👋🏻'), findsNothing);
     });
   });
+
+  group('최근 사용', () {
+    Future<void> goToRecentsTab(WidgetTester tester) async {
+      await tester.tap(find.byIcon(Icons.access_time));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('처음에는 비어 있고 안내 문구가 보인다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          noRecentsText: '아직 없어요',
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await goToRecentsTab(tester);
+
+      expect(find.text('아직 없어요'), findsOneWidget);
+    });
+
+    testWidgets('선택한 이모지가 최근 사용 맨 앞에 쌓인다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('😀'));
+      await tester.tap(find.text('😃'));
+      await goToRecentsTab(tester);
+
+      final recentsGrid = find.byKey(const ValueKey('recents'));
+      final texts = tester
+          .widgetList<Text>(find.descendant(
+              of: recentsGrid, matching: find.byType(Text)))
+          .map((t) => t.data)
+          .toList();
+      expect(texts, ['😃', '😀']); // 최신이 앞
+    });
+
+    testWidgets('같은 이모지를 다시 선택하면 중복 없이 맨 앞으로 온다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('😀'));
+      await tester.tap(find.text('😃'));
+      await tester.tap(find.text('😀')); // 재선택
+      await goToRecentsTab(tester);
+
+      final recentsGrid = find.byKey(const ValueKey('recents'));
+      final texts = tester
+          .widgetList<Text>(find.descendant(
+              of: recentsGrid, matching: find.byType(Text)))
+          .map((t) => t.data)
+          .toList();
+      expect(texts, ['😀', '😃']);
+    });
+
+    testWidgets('피부색 변형을 선택해도 기본형으로 저장된다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.accessibility));
+      await tester.pumpAndSettle();
+      await tester.longPress(find.text('👋'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('👋🏽'));
+      await tester.pumpAndSettle();
+
+      await goToRecentsTab(tester);
+      final recentsGrid = find.byKey(const ValueKey('recents'));
+      expect(
+        find.descendant(of: recentsGrid, matching: find.text('👋')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: recentsGrid, matching: find.text('👋🏽')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('주입한 저장소에 저장되고 다음 피커가 그걸 불러온다', (tester) async {
+      final storage = MemoryRecentEmojiStorage();
+
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          recentsStorage: storage,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('😀'));
+      await tester.pumpAndSettle();
+
+      // 완전히 새 피커 인스턴스에 같은 저장소 주입
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          key: UniqueKey(),
+          search: search,
+          onEmojiSelected: (_) {},
+          recentsStorage: storage,
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await goToRecentsTab(tester);
+
+      final recentsGrid = find.byKey(const ValueKey('recents'));
+      expect(
+        find.descendant(of: recentsGrid, matching: find.text('😀')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('recentsLimit을 넘으면 오래된 것부터 밀려난다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          recentsLimit: 2,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('😀'));
+      await tester.tap(find.text('😃'));
+      await tester.tap(find.text('😄'));
+      await goToRecentsTab(tester);
+
+      final recentsGrid = find.byKey(const ValueKey('recents'));
+      final texts = tester
+          .widgetList<Text>(find.descendant(
+              of: recentsGrid, matching: find.byType(Text)))
+          .map((t) => t.data)
+          .toList();
+      expect(texts, ['😄', '😃']); // 😀은 밀려남
+    });
+  });
 }
