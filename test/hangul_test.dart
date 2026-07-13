@@ -52,6 +52,14 @@ void main() {
       expect(matchesHangul('고양이', '강아지'), isFalse);
     });
 
+    test('띄어쓰기가 있는 키워드도 공백 무시하고 매칭', () {
+      // 실사용에서 발견한 버그: '수영하는 여자'의 공백 때문에 초성 검색 실패
+      expect(matchesHangul('수영하는 여자', 'ㅅㅇㅎㄴㅇㅈ'), isTrue); // 붙여 친 초성
+      expect(matchesHangul('수영하는 여자', 'ㅅㅇㅎㄴ ㅇㅈ'), isTrue); // 띄어 친 초성
+      expect(matchesHangul('수영하는 여자', '수영하는여자'), isTrue); // 붙여 친 완성
+      expect(matchesHangul('수영하는 여자', '는여'), isTrue); // 경계 걸친 검색어
+    });
+
     test('빈 검색어는 매칭 안 함', () {
       expect(matchesHangul('고양이', ''), isFalse);
     });

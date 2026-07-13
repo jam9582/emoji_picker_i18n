@@ -88,16 +88,21 @@ String toJamoStream(String text) {
   return buffer.toString();
 }
 
-/// 한글 검색 매칭.
+/// 모든 공백 제거 — 매칭 시 띄어쓰기를 무시하기 위한 정규화.
+/// ('수영하는 여자'를 'ㅅㅇㅎㄴㅇㅈ'로도, '수영하는여자'로도 찾을 수 있게)
+String squashSpaces(String text) => text.replaceAll(RegExp(r'\s'), '');
+
+/// 한글 검색 매칭. 양쪽의 공백은 무시한다.
 ///
 /// - 초성만으로 된 검색어: 대상의 초성 나열에 연속 포함되면 매칭
 /// - 그 외(완성 글자, 혼합, 치다 만 입력): 양쪽을 자모 스트림으로 펴서
 ///   부분 문자열이면 매칭. '고ㅇ'(ㄱㅗㅇ)이 '고양이'(ㄱㅗㅇㅑㅇㅇㅣ)에
 ///   포함되는 원리로, 타이핑 중간 상태('공' 등)도 자연스럽게 매칭된다.
 bool matchesHangul(String target, String query) {
-  if (query.isEmpty) return false;
-  if (isChoseongQuery(query)) {
-    return toChoseong(target).contains(query);
+  final q = squashSpaces(query);
+  if (q.isEmpty) return false;
+  if (isChoseongQuery(q)) {
+    return squashSpaces(toChoseong(target)).contains(q);
   }
-  return toJamoStream(target).contains(toJamoStream(query));
+  return squashSpaces(toJamoStream(target)).contains(toJamoStream(q));
 }

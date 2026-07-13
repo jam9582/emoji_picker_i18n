@@ -43,6 +43,13 @@ void main() {
     test('치다 만 입력: 고양ㅇ', () {
       expect(search.search('고양ㅇ').map((e) => e.char), contains('🐱'));
     });
+
+    test('띄어쓰기 있는 키워드의 초성 검색 (공백 무시)', () {
+      // '수영하는 여자' — 붙여 치든 띄어 치든 검색돼야 함
+      expect(search.search('ㅅㅇㅎㄴㅇㅈ').map((e) => e.char), contains('🏊‍♀️'));
+      expect(search.search('ㅅㅇㅎㄴ ㅇㅈ').map((e) => e.char), contains('🏊‍♀️'));
+      expect(search.search('수영하는여자').map((e) => e.char), contains('🏊‍♀️'));
+    });
   });
 
   group('검색 결과 규칙', () {

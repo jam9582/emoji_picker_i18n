@@ -57,8 +57,9 @@ class EmojiSearch {
   List<Emoji> emojisOfGroup(int group) => _byGroup[group] ?? const [];
 
   /// [query]에 매칭되는 이모지를 순위순으로 반환한다.
+  /// 검색어와 키워드 양쪽의 공백은 무시한다.
   List<Emoji> search(String query, {int limit = 60}) {
-    final q = query.trim().toLowerCase();
+    final q = squashSpaces(query.toLowerCase());
     if (q.isEmpty) return const [];
 
     final jamoQuery = containsHangul(q) && !isChoseongQuery(q)
@@ -97,10 +98,15 @@ class EmojiSearch {
 }
 
 /// 키워드 하나와, 한글일 경우의 초성·자모 변환 캐시.
+/// 모든 변환 결과는 공백 제거 상태로 보관한다 (매칭 시 띄어쓰기 무시).
 class _Keyword {
-  _Keyword(this.text, {required this.isLabel})
-      : choseong = containsHangul(text) ? toChoseong(text) : null,
-        jamo = containsHangul(text) ? toJamoStream(text) : null;
+  _Keyword(String rawText, {required this.isLabel})
+      : text = squashSpaces(rawText),
+        choseong =
+            containsHangul(rawText) ? squashSpaces(toChoseong(rawText)) : null,
+        jamo = containsHangul(rawText)
+            ? squashSpaces(toJamoStream(rawText))
+            : null;
 
   final String text;
 
