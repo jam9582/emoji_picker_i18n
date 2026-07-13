@@ -150,4 +150,69 @@ void main() {
       expect(find.byTooltip('동물과 자연'), findsOneWidget);
     });
   });
+
+  group('피부색 오버레이', () {
+    Future<void> goToPeopleTab(WidgetTester tester) async {
+      await tester.tap(find.byIcon(Icons.accessibility));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('롱프레스하면 피부색 변형 팝업이 뜬다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await goToPeopleTab(tester);
+
+      await tester.longPress(find.text('👋'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('👋🏻'), findsOneWidget);
+      expect(find.text('👋🏿'), findsOneWidget);
+    });
+
+    testWidgets('변형을 탭하면 그 변형이 선택되고 팝업이 닫힌다', (tester) async {
+      Emoji? selected;
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (emoji) => selected = emoji,
+        ),
+      ));
+      await goToPeopleTab(tester);
+
+      await tester.longPress(find.text('👋'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('👋🏽'));
+      await tester.pumpAndSettle();
+
+      expect(selected!.char, '👋🏽');
+      expect(find.text('👋🏽'), findsNothing); // 팝업 닫힘
+    });
+
+    testWidgets('변형 없는 이모지는 롱프레스해도 팝업이 없다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
+      ));
+      await tester.longPress(find.text('😀'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TapRegion), findsNothing);
+    });
+
+    testWidgets('enableSkinTones: false면 롱프레스가 비활성', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          enableSkinTones: false,
+        ),
+      ));
+      await goToPeopleTab(tester);
+
+      await tester.longPress(find.text('👋'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('👋🏻'), findsNothing);
+    });
+  });
 }

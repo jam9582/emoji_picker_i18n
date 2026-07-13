@@ -5,6 +5,10 @@ import '../emoji.dart';
 /// 이모지 하나를 탭했을 때의 콜백.
 typedef OnEmojiSelected = void Function(Emoji emoji);
 
+/// 피부색 변형이 있는 이모지를 길게 눌렀을 때의 콜백.
+/// [cellRect]는 눌린 셀의 화면 기준 위치 (오버레이 배치용).
+typedef OnEmojiLongPressed = void Function(Emoji emoji, Rect cellRect);
+
 /// 이모지 격자.
 ///
 /// 피커의 가장 안쪽 부품. 카테고리 페이지와 검색 결과가 모두 이 위젯으로
@@ -14,6 +18,7 @@ class EmojiGrid extends StatelessWidget {
     super.key,
     required this.emojis,
     required this.onEmojiSelected,
+    this.onEmojiLongPressed,
     this.columns = 8,
     this.emojiSize = 28,
     this.padding = const EdgeInsets.all(8),
@@ -24,6 +29,10 @@ class EmojiGrid extends StatelessWidget {
   final List<Emoji> emojis;
 
   final OnEmojiSelected onEmojiSelected;
+
+  /// 피부색 변형 보유 이모지의 롱프레스 콜백.
+  /// null이면 롱프레스 비활성 + 변형 보유 표시(점)도 그리지 않는다.
+  final OnEmojiLongPressed? onEmojiLongPressed;
 
   /// 한 줄에 표시할 개수
   final int columns;
@@ -49,14 +58,45 @@ class EmojiGrid extends StatelessWidget {
       itemCount: emojis.length,
       itemBuilder: (context, index) {
         final emoji = emojis[index];
-        return InkWell(
+        final hasSkins =
+            onEmojiLongPressed != null && emoji.skins.isNotEmpty;
+
+        return Builder(
           key: ValueKey(emoji.char),
-          borderRadius: BorderRadius.circular(8),
-          onTap: () => onEmojiSelected(emoji),
-          child: Center(
-            child: Text(
-              emoji.char,
-              style: TextStyle(fontSize: emojiSize),
+          builder: (cellContext) => InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => onEmojiSelected(emoji),
+            onLongPress: hasSkins
+                ? () {
+                    final box = cellContext.findRenderObject() as RenderBox;
+                    onEmojiLongPressed!(
+                      emoji,
+                      box.localToGlobal(Offset.zero) & box.size,
+                    );
+                  }
+                : null,
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    emoji.char,
+                    style: TextStyle(fontSize: emojiSize),
+                  ),
+                ),
+                if (hasSkins)
+                  Positioned(
+                    right: 3,
+                    bottom: 3,
+                    child: Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         );

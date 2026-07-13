@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../emoji.dart';
 import '../search/emoji_search.dart';
 import 'emoji_grid.dart';
 
@@ -31,6 +32,7 @@ class EmojiPickerI18n extends StatefulWidget {
     this.emojiSize = 28,
     this.searchHintText = 'Search',
     this.noResultsText = ':(',
+    this.enableSkinTones = true,
   });
 
   /// 데이터·검색을 담당하는 엔진. 색인 구축 비용이 있으므로
@@ -53,6 +55,9 @@ class EmojiPickerI18n extends StatefulWidget {
   /// 검색 결과가 없을 때 표시할 문구
   final String noResultsText;
 
+  /// 피부색 변형 보유 이모지의 롱프레스 선택 기능
+  final bool enableSkinTones;
+
   @override
   State<EmojiPickerI18n> createState() => _EmojiPickerI18nState();
 }
@@ -61,6 +66,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
   final _queryController = TextEditingController();
   final _pageController = PageController();
   int _currentPage = 0;
+  OverlayEntry? _skinToneOverlay;
 
   /// 그룹 번호 → 탭 아이콘 (아이콘은 언어와 무관해 코드에 둔다)
   static const _groupIcons = <int, IconData>{
@@ -85,12 +91,81 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
 
   @override
   void dispose() {
+    _removeSkinToneOverlay();
     _queryController.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
   bool get _isSearching => _queryController.text.trim().isNotEmpty;
+
+  // ---- 피부색 오버레이 ----
+
+  void _removeSkinToneOverlay() {
+    _skinToneOverlay?.remove();
+    _skinToneOverlay = null;
+  }
+
+  /// 롱프레스된 셀 바로 위에 기본형 + 피부색 변형들을 가로로 띄운다.
+  /// 바깥을 탭하면 닫히고, 변형을 탭하면 선택 콜백 후 닫힌다.
+  void _showSkinToneOverlay(Emoji emoji, Rect cellRect) {
+    _removeSkinToneOverlay();
+
+    final variants = [emoji.char, ...emoji.skins];
+    final cellSize = widget.emojiSize + 16;
+    final overlayWidth = variants.length * cellSize + 8;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final left = (cellRect.center.dx - overlayWidth / 2)
+        .clamp(4.0, screenWidth - overlayWidth - 4);
+    final top = (cellRect.top - cellSize - 12).clamp(4.0, double.infinity);
+
+    _skinToneOverlay = OverlayEntry(
+      builder: (_) => Positioned(
+        left: left,
+        top: top,
+        child: TapRegion(
+          onTapOutside: (_) => _removeSkinToneOverlay(),
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final variant in variants)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        widget.onEmojiSelected(Emoji(
+                          char: variant,
+                          group: emoji.group,
+                          skins: const [],
+                          label: emoji.label,
+                          tags: emoji.tags,
+                        ));
+                        _removeSkinToneOverlay();
+                      },
+                      child: SizedBox(
+                        width: cellSize,
+                        height: cellSize,
+                        child: Center(
+                          child: Text(
+                            variant,
+                            style: TextStyle(fontSize: widget.emojiSize),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Overlay.of(context).insert(_skinToneOverlay!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +245,8 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
         key: ValueKey(groups[index]),
         emojis: widget.search.emojisOfGroup(groups[index]),
         onEmojiSelected: widget.onEmojiSelected,
+        onEmojiLongPressed:
+            widget.enableSkinTones ? _showSkinToneOverlay : null,
         columns: widget.columns,
         emojiSize: widget.emojiSize,
       ),
@@ -180,6 +257,8 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
     return EmojiGrid(
       emojis: widget.search.search(_queryController.text.trim()),
       onEmojiSelected: widget.onEmojiSelected,
+      onEmojiLongPressed:
+          widget.enableSkinTones ? _showSkinToneOverlay : null,
       columns: widget.columns,
       emojiSize: widget.emojiSize,
       emptyPlaceholder: Text(
