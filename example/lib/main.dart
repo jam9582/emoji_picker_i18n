@@ -43,52 +43,62 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('emoji_picker_i18n')),
-      body: Column(
-        children: [
-          // 선택 결과 표시 영역
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _selected?.char ?? '❔',
-                  style: const TextStyle(fontSize: 48),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _selected?.label ?? '아래에서 골라보세요',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    if (_selected != null)
-                      Text(
-                        _selected!.tags.join(', '),
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          // 피커 — '고양이', 'ㄱㅇㅇ', '고ㅇ', 'cat' 모두 검색됩니다
-          Expanded(
-            child: EmojiPickerI18n(
-              search: _search,
-              categoryLabels: kEmojiGroupNamesKo,
-              searchHintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
-              noResultsText: '검색 결과가 없어요',
-              noRecentsText: '아직 사용한 이모지가 없어요',
-              onEmojiSelected: (emoji) => setState(() => _selected = emoji),
-            ),
-          ),
-        ],
+      // 데스크톱에서도 폰 화면 폭으로 미리보기 (폰에서는 영향 없음)
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: _buildBody(context),
+        ),
       ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return Column(
+      children: [
+        // 선택 결과 표시 영역
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _selected?.char ?? '❔',
+                style: const TextStyle(fontSize: 48),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _selected?.label ?? '아래에서 골라보세요',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (_selected != null)
+                    Text(
+                      _selected!.tags.join(', '),
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        // 피커 — '고양이', 'ㄱㅇㅇ', '고ㅇ', 'cat' 모두 검색됩니다
+        Expanded(
+          child: EmojiPickerI18n(
+            search: _search,
+            categoryLabels: kEmojiGroupNamesKo,
+            searchHintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
+            noResultsText: '검색 결과가 없어요',
+            noRecentsText: '아직 사용한 이모지가 없어요',
+            onEmojiSelected: (emoji) => setState(() => _selected = emoji),
+          ),
+        ),
+      ],
     );
   }
 }

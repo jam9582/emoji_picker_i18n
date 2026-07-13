@@ -19,9 +19,9 @@ class EmojiGrid extends StatelessWidget {
     required this.emojis,
     required this.onEmojiSelected,
     this.onEmojiLongPressed,
-    this.columns = 8,
+    this.cellExtent = 44,
     this.emojiSize = 28,
-    this.padding = const EdgeInsets.all(8),
+    this.padding = const EdgeInsets.symmetric(horizontal: 8),
     this.emptyPlaceholder,
   });
 
@@ -34,8 +34,9 @@ class EmojiGrid extends StatelessWidget {
   /// null이면 롱프레스 비활성 + 변형 보유 표시(점)도 그리지 않는다.
   final OnEmojiLongPressed? onEmojiLongPressed;
 
-  /// 한 줄에 표시할 개수
-  final int columns;
+  /// 셀 한 칸의 최대 크기. 열 개수를 고정하는 대신 화면 폭에 맞춰
+  /// 열이 자동으로 늘어난다 (폰 세로 ~8열, 태블릿·데스크톱은 더 많이)
+  final double cellExtent;
 
   /// 이모지 글자 크기
   final double emojiSize;
@@ -52,8 +53,8 @@ class EmojiGrid extends StatelessWidget {
     }
     return GridView.builder(
       padding: padding,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: cellExtent,
       ),
       itemCount: emojis.length,
       itemBuilder: (context, index) {
