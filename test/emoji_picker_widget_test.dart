@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:emoji_picker_i18n/emoji_picker_i18n.dart';
 import 'package:emoji_picker_i18n/locales/en.dart';
@@ -10,6 +11,9 @@ void main() {
     common: kEmojiCommon,
     locales: [kEmojiLocaleKo, kEmojiLocaleEn],
   );
+
+  // 기본 저장소(shared_preferences)를 테스트마다 빈 상태로 초기화
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   Widget wrap(Widget child) =>
       MaterialApp(home: Scaffold(body: child));

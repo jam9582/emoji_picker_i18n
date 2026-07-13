@@ -22,7 +22,6 @@ import 'emoji_grid.dart';
 ///   search: search,
 ///   onEmojiSelected: (emoji) => print(emoji.char),
 ///   categoryLabels: kEmojiGroupNamesKo, // 탭 툴팁·접근성 라벨
-///   recentsStorage: myStorage, // 미지정 시 세션 한정 메모리 저장
 /// )
 /// ```
 class EmojiPickerI18n extends StatefulWidget {
@@ -69,8 +68,9 @@ class EmojiPickerI18n extends StatefulWidget {
   /// 최근 사용 탭 표시 여부
   final bool enableRecents;
 
-  /// 최근 사용 저장소. 미지정 시 앱을 끄면 사라지는 메모리 저장소를 쓴다.
-  /// 영구 저장이 필요하면 [RecentEmojiStorage] 구현을 주입할 것.
+  /// 최근 사용 저장소. 미지정 시 shared_preferences 영구 저장
+  /// ([PrefsRecentEmojiStorage])이 기본값. 앱의 DB 등 다른 곳에
+  /// 저장하려면 [RecentEmojiStorage] 구현을 주입할 것.
   final RecentEmojiStorage? recentsStorage;
 
   /// 최근 사용 보관 개수
@@ -122,7 +122,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
     // 입력 즉시 재검색 — 엔진이 1ms 미만이라 디바운스 불필요
     _queryController.addListener(() => setState(() {}));
 
-    _recentsStorage = widget.recentsStorage ?? MemoryRecentEmojiStorage();
+    _recentsStorage = widget.recentsStorage ?? const PrefsRecentEmojiStorage();
     if (_hasRecentsTab) {
       _recentsStorage.load().then((chars) {
         if (!mounted) return;
