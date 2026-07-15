@@ -14,8 +14,9 @@ class ExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'emoji_picker_i18n example',
+      // 피커는 앱 테마를 자동으로 따르므로, 데모는 무난한 회색 계열로
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
       home: const PickerDemoPage(),

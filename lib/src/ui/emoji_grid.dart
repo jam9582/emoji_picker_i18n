@@ -59,8 +59,7 @@ class EmojiGrid extends StatelessWidget {
       itemCount: emojis.length,
       itemBuilder: (context, index) {
         final emoji = emojis[index];
-        final hasSkins =
-            onEmojiLongPressed != null && emoji.skins.isNotEmpty;
+        final hasSkins = onEmojiLongPressed != null && emoji.skins.isNotEmpty;
 
         return Builder(
           key: ValueKey(emoji.char),

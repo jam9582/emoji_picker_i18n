@@ -143,6 +143,19 @@ void main() {
       expect(find.byIcon(Icons.pets), findsOneWidget); // 지우면 복귀
     });
 
+    testWidgets('테마 오버라이드: 선택 탭 색이 지정한 색으로 바뀐다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          theme: const EmojiPickerTheme(selectedTabColor: Colors.teal),
+        ),
+      ));
+      // 시작 페이지(스마일리) 탭 아이콘이 지정 색이어야 함
+      final icon = tester.widget<Icon>(find.byIcon(Icons.tag_faces));
+      expect(icon.color, Colors.teal);
+    });
+
     testWidgets('카테고리 이름이 탭 툴팁으로 붙는다', (tester) async {
       await tester.pumpWidget(wrap(
         EmojiPickerI18n(

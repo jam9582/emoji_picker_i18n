@@ -5,6 +5,7 @@ import '../recents/recent_emoji_storage.dart';
 import '../search/emoji_search.dart';
 import '../search/normalize.dart';
 import 'emoji_grid.dart';
+import 'emoji_picker_theme.dart';
 
 /// 다국어 이모지 피커 위젯.
 ///
@@ -30,6 +31,7 @@ class EmojiPickerI18n extends StatefulWidget {
     required this.search,
     required this.onEmojiSelected,
     this.categoryLabels,
+    this.theme = const EmojiPickerTheme(),
     this.cellExtent = 44,
     this.emojiSize = 28,
     this.searchHintText = 'Search',
@@ -51,6 +53,9 @@ class EmojiPickerI18n extends StatefulWidget {
   /// 카테고리 이름 목록 (인덱스 = 그룹 번호). 데이터 파일의
   /// kEmojiGroupNames* 상수를 넘기면 탭 툴팁·접근성 라벨로 쓰인다.
   final List<String>? categoryLabels;
+
+  /// 색상 테마. 미지정 필드는 앱 테마([ColorScheme])를 자동으로 따른다.
+  final EmojiPickerTheme theme;
 
   /// 이모지 셀 한 칸의 최대 크기 — 화면 폭에 맞춰 열 개수가 자동 조절됨
   final double cellExtent;
@@ -191,8 +196,10 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
     final cellSize = widget.emojiSize + 16;
     final overlayWidth = variants.length * cellSize + 8;
     final screenWidth = MediaQuery.of(context).size.width;
-    final left = (cellRect.center.dx - overlayWidth / 2)
-        .clamp(4.0, screenWidth - overlayWidth - 4);
+    final left = (cellRect.center.dx - overlayWidth / 2).clamp(
+      4.0,
+      screenWidth - overlayWidth - 4,
+    );
     final top = (cellRect.top - cellSize - 12).clamp(4.0, double.infinity);
 
     _skinToneOverlay = OverlayEntry(
@@ -203,6 +210,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
           onTapOutside: (_) => _removeSkinToneOverlay(),
           child: Material(
             elevation: 4,
+            color: widget.theme.skinToneDialogColor,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(4),
@@ -213,13 +221,15 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
                     InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () {
-                        _handleEmojiSelected(Emoji(
-                          char: variant,
-                          group: emoji.group,
-                          skins: const [],
-                          label: emoji.label,
-                          tags: emoji.tags,
-                        ));
+                        _handleEmojiSelected(
+                          Emoji(
+                            char: variant,
+                            group: emoji.group,
+                            skins: const [],
+                            label: emoji.label,
+                            tags: emoji.tags,
+                          ),
+                        );
                         _removeSkinToneOverlay();
                       },
                       child: SizedBox(
@@ -247,7 +257,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final body = Column(
       children: [
         _buildSearchField(),
         if (!_isSearching) _buildCategoryBar(),
@@ -256,7 +266,14 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
         ),
       ],
     );
+    final background = widget.theme.backgroundColor;
+    return background == null
+        ? body
+        : ColoredBox(color: background, child: body);
   }
+
+  Color get _placeholderColor =>
+      widget.theme.placeholderColor ?? Theme.of(context).disabledColor;
 
   Widget _buildSearchField() {
     final scheme = Theme.of(context).colorScheme;
@@ -276,7 +293,8 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
                 )
               : null,
           filled: true,
-          fillColor: scheme.surfaceContainerHighest,
+          fillColor:
+              widget.theme.searchFieldColor ?? scheme.surfaceContainerHighest,
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
           // 모바일 키보드 검색창처럼 테두리 없는 알약 모양
@@ -291,8 +309,10 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
 
   Widget _buildCategoryBar() {
     final groups = widget.search.groups;
-    final selectedColor = Theme.of(context).colorScheme.primary;
-    final unselectedColor = Theme.of(context).disabledColor;
+    final selectedColor =
+        widget.theme.selectedTabColor ?? Theme.of(context).colorScheme.primary;
+    final unselectedColor =
+        widget.theme.unselectedTabColor ?? Theme.of(context).disabledColor;
 
     Widget tab({
       required int pageIndex,
@@ -333,7 +353,8 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
           tab(
             pageIndex: i + offset,
             icon: _groupIcons[groups[i]] ?? Icons.emoji_emotions,
-            tooltip: widget.categoryLabels != null &&
+            tooltip:
+                widget.categoryLabels != null &&
                     groups[i] < widget.categoryLabels!.length
                 ? widget.categoryLabels![groups[i]]
                 : null,
@@ -361,13 +382,14 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
             key: const ValueKey('recents'),
             emojis: _recents,
             onEmojiSelected: _handleEmojiSelected,
-            onEmojiLongPressed:
-                widget.enableSkinTones ? _showSkinToneOverlay : null,
+            onEmojiLongPressed: widget.enableSkinTones
+                ? _showSkinToneOverlay
+                : null,
             cellExtent: widget.cellExtent,
             emojiSize: widget.emojiSize,
             emptyPlaceholder: Text(
               widget.noRecentsText,
-              style: TextStyle(color: Theme.of(context).disabledColor),
+              style: TextStyle(color: _placeholderColor),
             ),
           );
         }
@@ -376,8 +398,9 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
           key: ValueKey(group),
           emojis: widget.search.emojisOfGroup(group),
           onEmojiSelected: _handleEmojiSelected,
-          onEmojiLongPressed:
-              widget.enableSkinTones ? _showSkinToneOverlay : null,
+          onEmojiLongPressed: widget.enableSkinTones
+              ? _showSkinToneOverlay
+              : null,
           cellExtent: widget.cellExtent,
           emojiSize: widget.emojiSize,
         );
@@ -389,16 +412,12 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
     return EmojiGrid(
       emojis: widget.search.search(_queryController.text.trim()),
       onEmojiSelected: _handleEmojiSelected,
-      onEmojiLongPressed:
-          widget.enableSkinTones ? _showSkinToneOverlay : null,
+      onEmojiLongPressed: widget.enableSkinTones ? _showSkinToneOverlay : null,
       cellExtent: widget.cellExtent,
       emojiSize: widget.emojiSize,
       emptyPlaceholder: Text(
         widget.noResultsText,
-        style: TextStyle(
-          fontSize: widget.emojiSize,
-          color: Theme.of(context).disabledColor,
-        ),
+        style: TextStyle(fontSize: widget.emojiSize, color: _placeholderColor),
       ),
     );
   }
