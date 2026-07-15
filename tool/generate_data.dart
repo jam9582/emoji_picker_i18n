@@ -31,6 +31,8 @@ void main(List<String> args) {
           .whereType<File>()
           .where((f) => f.path.endsWith('.json'))
           .map((f) => f.uri.pathSegments.last.replaceAll('.json', ''))
+          // messages_*.json은 카테고리 이름 파일이지 언어가 아님
+          .where((name) => !name.startsWith('messages_'))
           .toList()
     ..sort();
 
@@ -113,8 +115,9 @@ void _writeLocale(String locale, List<String> hexOrder) {
     return "  '${_escape([label, ...tags].join('|'))}',";
   }).join('\n');
 
-  final varName = 'kEmojiLocale${_capitalize(locale)}';
-  File('$outDir/emoji_locale_$locale.dart').writeAsStringSync('''
+  final varName = 'kEmojiLocale${_camelCase(locale)}';
+  final fileName = _fileSafe(locale);
+  File('$outDir/emoji_locale_$fileName.dart').writeAsStringSync('''
 // GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
 //
 // 형식: 'label|tag1|tag2|...' (emoji_common.dart 와 같은 인덱스 순서)
@@ -126,10 +129,10 @@ ${_groupNamesConst(locale)}''');
 
   // 사용자용 공개 import 경로: package:emoji_picker_i18n/locales/<locale>.dart
   Directory('lib/locales').createSync(recursive: true);
-  File('lib/locales/$locale.dart').writeAsStringSync('''
+  File('lib/locales/$fileName.dart').writeAsStringSync('''
 // GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
 
-export '../src/data/emoji_locale_$locale.dart';
+export '../src/data/emoji_locale_$fileName.dart';
 ''');
 }
 
@@ -151,7 +154,7 @@ String _groupNamesConst(String locale) {
   return '''
 
 /// 카테고리(그룹) 이름 — 인덱스가 그룹 번호와 일치
-const List<String> kEmojiGroupNames${_capitalize(locale)} = [
+const List<String> kEmojiGroupNames${_camelCase(locale)} = [
 $names
 ];
 ''';
@@ -160,6 +163,11 @@ $names
 String _escape(String s) =>
     s.replaceAll(r'\', r'\\').replaceAll("'", r"\'").replaceAll(r'$', r'\$');
 
-String _capitalize(String s) => s.isEmpty
-    ? s
-    : s[0].toUpperCase() + s.substring(1).replaceAll('-', '');
+/// 'en-gb' → 'EnGb' (Dart 상수 이름용)
+String _camelCase(String locale) => locale
+    .split('-')
+    .map((p) => p.isEmpty ? p : p[0].toUpperCase() + p.substring(1))
+    .join();
+
+/// 'en-gb' → 'en_gb' (Dart 파일명 규칙용)
+String _fileSafe(String locale) => locale.replaceAll('-', '_');
