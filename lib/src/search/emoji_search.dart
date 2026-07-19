@@ -15,12 +15,31 @@ import 'normalize.dart';
 class EmojiSearch {
   /// [common]은 kEmojiCommon, [locales]는 kEmojiLocaleKo 등 언어 데이터 목록.
   /// 첫 번째 언어가 [Emoji.label]의 대표 언어가 된다.
+  ///
+  /// [maxEmojiVersion]을 지정하면 그보다 늦게 추가된 이모지(와 피부색 변형)를
+  /// 목록·검색·역조회에서 전부 제외한다. 구형 기기에서 □(두부)로 보이는
+  /// 이모지를 걸러내는 용도 (예: Android 12 폰이면 13.1 정도).
   EmojiSearch({
     required List<String> common,
     required List<List<String>> locales,
-  })  : assert(locales.isNotEmpty, '언어 데이터가 최소 1개 필요'),
-        emojis = parseEmojiData(common, locales.first) {
-    _entries = List.generate(emojis.length, (i) {
+    this.maxEmojiVersion,
+  }) : assert(locales.isNotEmpty, '언어 데이터가 최소 1개 필요') {
+    // 필터로 인덱스가 밀리면 언어 데이터와 어긋나므로,
+    // 살아남은 원본 인덱스(kept)를 기억해 키워드 색인을 같은 기준으로 만든다
+    final all = parseEmojiData(common, locales.first);
+    final max = maxEmojiVersion;
+    final kept = <int>[];
+    final visible = <Emoji>[];
+    for (var i = 0; i < all.length; i++) {
+      final e = all[i];
+      if (max != null && e.version > max) continue;
+      kept.add(i);
+      visible.add(max == null ? e : _filterSkins(e, max));
+    }
+    emojis = visible;
+
+    _entries = List.generate(emojis.length, (k) {
+      final i = kept[k];
       final keywords = <_Keyword>[];
       for (final locale in locales) {
         final parts = locale[i].split('|');
@@ -45,10 +64,37 @@ class EmojiSearch {
   }
 
   /// 표준 순서로 정렬된 전체 이모지 (피커 그리드 표시용).
-  final List<Emoji> emojis;
+  /// [maxEmojiVersion]이 지정됐다면 필터링된 결과.
+  late final List<Emoji> emojis;
+
+  /// 표시할 최대 이모지 버전. null이면 필터링 없음.
+  final double? maxEmojiVersion;
 
   /// 데이터에 존재하는 카테고리(그룹) 번호 목록, 오름차순.
   late final List<int> groups;
+
+  /// [max]보다 늦게 추가된 피부색 변형을 제거한 사본을 만든다.
+  /// (🤝 기본형은 남기고 🤝🏻@14 변형만 빼는 경우)
+  static Emoji _filterSkins(Emoji e, double max) {
+    if (e.skinVersions.every((v) => v <= max)) return e;
+    final skins = <String>[];
+    final versions = <double>[];
+    for (var i = 0; i < e.skins.length; i++) {
+      if (e.skinVersions[i] <= max) {
+        skins.add(e.skins[i]);
+        versions.add(e.skinVersions[i]);
+      }
+    }
+    return Emoji(
+      char: e.char,
+      group: e.group,
+      version: e.version,
+      skins: skins,
+      skinVersions: versions,
+      label: e.label,
+      tags: e.tags,
+    );
+  }
 
   late final List<List<_Keyword>> _entries;
   late final Map<String, Emoji> _charIndex;

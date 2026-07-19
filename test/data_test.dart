@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:emoji_picker_i18n/src/data/emoji_common.dart';
+import 'package:emoji_picker_i18n/src/emoji.dart';
 import 'package:emoji_picker_i18n/src/data/emoji_locale_en.dart';
 import 'package:emoji_picker_i18n/src/data/emoji_locale_ko.dart';
 
@@ -44,7 +45,33 @@ void main() {
   test('피부색 변형이 공통 데이터에 붙어 있다', () {
     final wave = kEmojiCommon.firstWhere((e) => e.startsWith('👋'));
     final parts = wave.split('|');
-    expect(parts.length, 3, reason: '스킨 목록이 있어야 함');
-    expect(parts[2].split(',').length, 5, reason: '피부색 5종');
+    expect(parts.length, 4, reason: '버전 + 스킨 목록이 있어야 함');
+    expect(parts[3].split(',').length, 5, reason: '피부색 5종');
+  });
+
+  group('유니코드 버전 필드', () {
+    test('모든 항목에 버전이 있고 숫자로 파싱된다', () {
+      for (final e in kEmojiCommon) {
+        final version = double.parse(e.split('|')[2]);
+        expect(version, greaterThan(0));
+        expect(version, lessThan(30), reason: '터무니없는 버전은 파싱 오류 의심');
+      }
+    });
+
+    test('알려진 이모지의 버전이 맞다 (🥳=11, 🫡=14)', () {
+      final emojis = parseEmojiData(kEmojiCommon, kEmojiLocaleKo);
+      expect(emojis.firstWhere((e) => e.char == '🥳').version, 11);
+      expect(emojis.firstWhere((e) => e.char == '🫡').version, 14);
+    });
+
+    test('피부색 변형의 버전이 기본형과 다르면 따로 기록된다 (🤝=3, 🤝🏻=14)', () {
+      final emojis = parseEmojiData(kEmojiCommon, kEmojiLocaleKo);
+      final handshake = emojis.firstWhere((e) => e.char == '🤝');
+      expect(handshake.version, 3);
+      expect(handshake.skins, isNotEmpty);
+      expect(handshake.skins.length, handshake.skinVersions.length);
+      final light = handshake.skins.indexOf('🤝🏻');
+      expect(handshake.skinVersions[light], 14);
+    });
   });
 }

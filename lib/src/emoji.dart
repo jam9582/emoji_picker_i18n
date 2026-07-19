@@ -10,6 +10,8 @@ class Emoji {
     required this.skins,
     required this.label,
     required this.tags,
+    this.version = 0,
+    this.skinVersions = const [],
   });
 
   /// 이모지 문자 (예: '🐱')
@@ -27,6 +29,14 @@ class Emoji {
   /// 검색 키워드 (첫 번째 언어 기준)
   final List<String> tags;
 
+  /// 이 이모지가 추가된 유니코드 이모지 버전 (예: 🥳 11, 🫡 14).
+  /// 구형 기기가 지원하는 버전과 비교해 표시 여부를 거를 때 쓴다.
+  final double version;
+
+  /// [skins]와 같은 인덱스의 버전 목록. 변형이 기본형보다 늦게
+  /// 추가되기도 한다 (🤝는 3이지만 🤝🏻는 14).
+  final List<double> skinVersions;
+
   @override
   String toString() => '$char($label)';
 }
@@ -40,10 +50,30 @@ List<Emoji> parseEmojiData(List<String> common, List<String> locale) {
   return List.generate(common.length, (i) {
     final commonParts = common[i].split('|');
     final localeParts = locale[i].split('|');
+    final version = double.parse(commonParts[2]);
+
+    // 피부색 변형: 'char' 또는 'char@버전' (기본형과 버전이 다를 때)
+    final skins = <String>[];
+    final skinVersions = <double>[];
+    if (commonParts.length > 3) {
+      for (final token in commonParts[3].split(',')) {
+        final at = token.indexOf('@');
+        if (at == -1) {
+          skins.add(token);
+          skinVersions.add(version);
+        } else {
+          skins.add(token.substring(0, at));
+          skinVersions.add(double.parse(token.substring(at + 1)));
+        }
+      }
+    }
+
     return Emoji(
       char: commonParts[0],
       group: int.parse(commonParts[1]),
-      skins: commonParts.length > 2 ? commonParts[2].split(',') : const [],
+      version: version,
+      skins: skins,
+      skinVersions: skinVersions,
       label: localeParts.first,
       tags: localeParts.sublist(1),
     );

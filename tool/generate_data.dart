@@ -6,12 +6,20 @@
 //   - lib/src/data/emoji_common.dart      : 언어 무관 공통 데이터 1벌
 //   - lib/src/data/emoji_locale_<xx>.dart : 언어별 이름·키워드
 //
+// 추가로 tool/cache/data_en.json (emojibase-data 전체판 data.json)이 필요하다.
+// 이모지별 유니코드 버전(구형 기기 필터용)이 compact에는 없어서 여기서 병합한다.
+// 버전은 언어 무관이므로 en 한 벌이면 충분하다:
+//   curl -o tool/cache/data_en.json \
+//     https://cdn.jsdelivr.net/npm/emojibase-data@16.0.3/en/data.json
+//
 // 사용법:
 //   dart run tool/generate_data.dart          # cache의 모든 언어 처리
 //   dart run tool/generate_data.dart ko en    # 지정 언어만 처리
 //
 // 형식 규칙:
-//   공통:   'unicode|group' 또는 'unicode|group|skin1,skin2,...'
+//   공통:   'unicode|group|version' 또는 'unicode|group|version|skin1,skin2,...'
+//           (피부색 변형의 버전이 기본형과 다르면 'skin@version'으로 표기 —
+//            예: 🤝는 3인데 🤝🏻는 14에 추가됨)
 //   언어별: 'label|tag1|tag2|...'  (공통 데이터와 같은 인덱스 순서)
 //
 // group 2(피부색 등 부품)와 group 없는 항목은 피커에 표시할 수 없으므로 제외.
@@ -31,8 +39,9 @@ void main(List<String> args) {
           .whereType<File>()
           .where((f) => f.path.endsWith('.json'))
           .map((f) => f.uri.pathSegments.last.replaceAll('.json', ''))
-          // messages_*.json은 카테고리 이름 파일이지 언어가 아님
-          .where((name) => !name.startsWith('messages_'))
+          // messages_*(카테고리 이름)·data_*(버전 병합용 전체판)는 언어가 아님
+          .where((name) =>
+              !name.startsWith('messages_') && !name.startsWith('data_'))
           .toList()
     ..sort();
 
@@ -47,7 +56,7 @@ void main(List<String> args) {
   final hexOrder = [for (final e in baseEntries) e['hexcode'] as String];
 
   Directory(outDir).createSync(recursive: true);
-  _writeCommon(baseEntries);
+  _writeCommon(baseEntries, _loadVersions());
 
   for (final locale in locales) {
     _writeLocale(locale, hexOrder);
@@ -73,21 +82,61 @@ List<Map<String, dynamic>> _loadPickerEntries(String locale) {
   return picker;
 }
 
-void _writeCommon(List<Map<String, dynamic>> entries) {
+/// tool/cache/data_en.json에서 hexcode → 유니코드 버전 맵을 만든다.
+/// 피부색 변형의 hexcode도 함께 담는다.
+Map<String, num> _loadVersions() {
+  final file = File('$cacheDir/data_en.json');
+  if (!file.existsSync()) {
+    stderr.writeln('없음: ${file.path} — 파일 상단 주석의 curl 명령으로 받을 것');
+    exit(1);
+  }
+  final all = (jsonDecode(file.readAsStringSync()) as List)
+      .cast<Map<String, dynamic>>();
+  final versions = <String, num>{};
+  for (final e in all) {
+    versions[e['hexcode'] as String] = e['version'] as num;
+    for (final s in (e['skins'] as List?) ?? const []) {
+      versions[(s as Map)['hexcode'] as String] = s['version'] as num;
+    }
+  }
+  return versions;
+}
+
+/// 0.6 → '0.6', 14 → '14' (뒤의 .0은 생략해 파일 크기 절약)
+String _fmtVersion(num v) =>
+    v == v.roundToDouble() ? v.toInt().toString() : v.toString();
+
+void _writeCommon(List<Map<String, dynamic>> entries, Map<String, num> versions) {
+  num versionOf(String hexcode) {
+    final v = versions[hexcode];
+    if (v == null) {
+      throw StateError('data_en.json에 버전 정보 없음: $hexcode');
+    }
+    return v;
+  }
+
   final lines = entries.map((e) {
     final unicode = e['unicode'] as String;
     final group = e['group'] as int;
-    final skins = (e['skins'] as List?)
-        ?.map((s) => (s as Map)['unicode'] as String)
-        .join(',');
-    final value = skins == null ? '$unicode|$group' : '$unicode|$group|$skins';
+    final version = versionOf(e['hexcode'] as String);
+    // 변형의 버전이 기본형과 다르면 '@버전'을 붙인다 (🤝=3, 🤝🏻=14)
+    final skins = (e['skins'] as List?)?.map((s) {
+      final skinChar = (s as Map)['unicode'] as String;
+      final skinVersion = versionOf(s['hexcode'] as String);
+      return skinVersion == version
+          ? skinChar
+          : '$skinChar@${_fmtVersion(skinVersion)}';
+    }).join(',');
+    final base = '$unicode|$group|${_fmtVersion(version)}';
+    final value = skins == null ? base : '$base|$skins';
     return "  '${_escape(value)}',";
   }).join('\n');
 
   File('$outDir/emoji_common.dart').writeAsStringSync('''
 // GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
 //
-// 형식: 'unicode|group' 또는 'unicode|group|skin1,skin2,...'
+// 형식: 'unicode|group|version' 또는 'unicode|group|version|skin1,skin2@ver,...'
+// (피부색 변형의 @ver 은 기본형과 버전이 다를 때만 붙음)
 
 const List<String> kEmojiCommon = [
 $lines

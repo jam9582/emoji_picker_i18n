@@ -97,4 +97,48 @@ void main() {
       expect(search.emojis.first.char, '😀', reason: '유니코드 표준 순서 1번');
     });
   });
+
+  group('maxEmojiVersion 필터 (구형 기기 대응)', () {
+    // Android 12 폰의 지원 수준(13.1)을 가정한 구성
+    final filtered = EmojiSearch(
+      common: kEmojiCommon,
+      locales: [kEmojiLocaleKo, kEmojiLocaleEn],
+      maxEmojiVersion: 13.1,
+    );
+
+    test('한계 버전보다 늦은 이모지는 목록에서 빠진다', () {
+      final chars = filtered.emojis.map((e) => e.char).toSet();
+      expect(chars, contains('🥳'), reason: '11.0은 표시');
+      expect(chars, isNot(contains('🫡')), reason: '14.0은 제외');
+      expect(filtered.emojis.length, lessThan(search.emojis.length));
+    });
+
+    test('검색 결과에서도 빠지고, 키워드 색인은 어긋나지 않는다', () {
+      // 필터로 앞쪽 인덱스가 밀려도 검색이 정확한 이모지를 찾는지 확인
+      final cat = filtered.search('고양이').map((e) => e.char).toList();
+      expect(cat.first, '🐈️');
+      final salute = filtered.search('경례').map((e) => e.char).toList();
+      expect(salute, isNot(contains('🫡')));
+    });
+
+    test('기본형은 남기고 늦게 추가된 피부색 변형만 뺀다 (🤝)', () {
+      final handshake =
+          filtered.emojis.firstWhere((e) => e.char == '🤝');
+      expect(handshake.skins, isEmpty, reason: '🤝🏻 등은 전부 14.0');
+
+      final wave = filtered.emojis.firstWhere((e) => e.char == '👋');
+      expect(wave.skins.length, 5, reason: '👋 변형(1.0)은 유지');
+    });
+
+    test('제외된 이모지는 역조회도 안 된다', () {
+      expect(filtered.findByChar('🫡'), isNull);
+      expect(filtered.findByChar('🤝🏻'), isNull, reason: '제외된 변형');
+      expect(filtered.findByChar('🤝'), isNotNull);
+    });
+
+    test('필터 없으면(기본값) 전체 제공', () {
+      expect(search.maxEmojiVersion, isNull);
+      expect(search.emojis.any((e) => e.char == '🫡'), isTrue);
+    });
+  });
 }
