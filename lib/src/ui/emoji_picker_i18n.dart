@@ -386,6 +386,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
             onEmojiLongPressed: widget.skinToneConfig.enabled
                 ? _showSkinToneOverlay
                 : null,
+            longPressDelay: widget.skinToneConfig.longPressDelay,
             config: widget.gridConfig,
             emptyPlaceholder: Text(
               widget.recentsConfig.emptyText,
@@ -401,6 +402,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
           onEmojiLongPressed: widget.skinToneConfig.enabled
               ? _showSkinToneOverlay
               : null,
+          longPressDelay: widget.skinToneConfig.longPressDelay,
           config: widget.gridConfig,
         );
       },
@@ -413,6 +415,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
       onEmojiSelected: _handleEmojiSelected,
       onEmojiLongPressed:
           widget.skinToneConfig.enabled ? _showSkinToneOverlay : null,
+      longPressDelay: widget.skinToneConfig.longPressDelay,
       config: widget.gridConfig,
       emptyPlaceholder: Text(
         widget.searchBarConfig.noResultsText,

@@ -323,6 +323,29 @@ void main() {
       expect(find.byType(TapRegion), findsNothing);
     });
 
+    testWidgets('longPressDelay를 줄이면 그 시간만 눌러도 팝업이 뜬다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          skinToneConfig: const EmojiSkinToneConfig(
+            longPressDelay: Duration(milliseconds: 250),
+          ),
+        ),
+      ));
+      await goToPeopleTab(tester);
+
+      // 기본(500ms)보다 짧게 눌러도 팝업이 떠야 한다
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('👋')),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(find.text('👋🏻'), findsOneWidget);
+    });
+
     testWidgets('skinToneConfig.enabled: false면 롱프레스가 비활성', (tester) async {
       await tester.pumpWidget(wrap(
         EmojiPickerI18n(

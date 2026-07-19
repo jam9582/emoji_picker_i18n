@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
 
 import '../recents/recent_emoji_storage.dart';
@@ -116,10 +117,17 @@ class EmojiGridConfig {
 
 /// 피부색 변형 선택 설정.
 class EmojiSkinToneConfig {
-  const EmojiSkinToneConfig({this.enabled = true});
+  const EmojiSkinToneConfig({
+    this.enabled = true,
+    this.longPressDelay = kLongPressTimeout,
+  });
 
   /// 피부색 변형 보유 이모지의 롱프레스 선택 기능
   final bool enabled;
+
+  /// 팝업이 뜨기까지 누르고 있어야 하는 시간. 기본은 Flutter 표준(500ms).
+  /// 짧게 줄수록 빨리 뜨지만, 너무 짧으면 스크롤하려던 손가락에도 반응한다
+  final Duration longPressDelay;
 }
 
 /// 최근 사용 탭 설정.

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../emoji.dart';
@@ -20,6 +21,7 @@ class EmojiGrid extends StatelessWidget {
     required this.emojis,
     required this.onEmojiSelected,
     this.onEmojiLongPressed,
+    this.longPressDelay = kLongPressTimeout,
     this.config = const EmojiGridConfig(),
     this.emptyPlaceholder,
   });
@@ -32,6 +34,9 @@ class EmojiGrid extends StatelessWidget {
   /// 피부색 변형 보유 이모지의 롱프레스 콜백.
   /// null이면 롱프레스 비활성 + 변형 보유 표시(점)도 그리지 않는다.
   final OnEmojiLongPressed? onEmojiLongPressed;
+
+  /// 롱프레스 인식 시간 ([onEmojiLongPressed]가 있을 때만 의미)
+  final Duration longPressDelay;
 
   /// 크기·간격·여백·텍스트 스타일 설정
   final EmojiGridConfig config;
@@ -62,39 +67,55 @@ class EmojiGrid extends StatelessWidget {
 
         return Builder(
           key: ValueKey(emoji.char),
-          builder: (cellContext) => InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () => onEmojiSelected(emoji),
-            onLongPress: hasSkins
-                ? () {
-                    final box = cellContext.findRenderObject() as RenderBox;
-                    onEmojiLongPressed!(
-                      emoji,
-                      box.localToGlobal(Offset.zero) & box.size,
-                    );
-                  }
-                : null,
-            child: Stack(
-              children: [
-                Center(
-                  child: Text(emoji.char, style: emojiStyle),
-                ),
-                if (hasSkins)
-                  Positioned(
-                    right: 3,
-                    bottom: 3,
-                    child: Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Theme.of(context).disabledColor,
+          builder: (cellContext) {
+            final cell = InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => onEmojiSelected(emoji),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(emoji.char, style: emojiStyle),
+                  ),
+                  if (hasSkins)
+                    Positioned(
+                      right: 3,
+                      bottom: 3,
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).disabledColor,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+            if (!hasSkins) return cell;
+            // InkWell.onLongPress는 인식 시간이 500ms로 고정이라,
+            // longPressDelay를 지정할 수 있는 인식기를 직접 단다
+            return RawGestureDetector(
+              gestures: {
+                LongPressGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      LongPressGestureRecognizer
+                    >(
+                      () =>
+                          LongPressGestureRecognizer(duration: longPressDelay),
+                      (recognizer) => recognizer.onLongPress = () {
+                        final box =
+                            cellContext.findRenderObject() as RenderBox;
+                        onEmojiLongPressed!(
+                          emoji,
+                          box.localToGlobal(Offset.zero) & box.size,
+                        );
+                      },
+                    ),
+              },
+              child: cell,
+            );
+          },
         );
       },
     );
