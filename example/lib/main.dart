@@ -32,13 +32,32 @@ class PickerDemoPage extends StatefulWidget {
 }
 
 class _PickerDemoPageState extends State<PickerDemoPage> {
-  // 색인 구축은 1회면 충분하므로 State 필드로 보관
-  final _search = EmojiSearch(
-    common: kEmojiCommon,
-    locales: [kEmojiLocaleKo, kEmojiLocaleEn],
-  );
+  // 기기의 이모지 지원 버전을 감지한 뒤 색인을 1회 구축 (State 필드로 보관)
+  EmojiSearch? _search;
+  double? _maxVersion;
 
   Emoji? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSearch();
+  }
+
+  Future<void> _initSearch() async {
+    // 구형 기기에서 □로 보이는 이모지를 걸러내기 위한 지원 버전 감지
+    final maxVersion = await detectMaxEmojiVersion();
+    debugPrint('detectMaxEmojiVersion → ${maxVersion ?? "감지 실패(전체 표시)"}');
+    if (!mounted) return;
+    setState(() {
+      _maxVersion = maxVersion;
+      _search = EmojiSearch(
+        common: kEmojiCommon,
+        locales: [kEmojiLocaleKo, kEmojiLocaleEn],
+        maxEmojiVersion: maxVersion,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +74,10 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   }
 
   Widget _buildBody(BuildContext context) {
+    final search = _search;
+    if (search == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         // 선택 결과 표시 영역
@@ -74,7 +97,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _selected?.label ?? '아래에서 골라보세요',
+                      _selected?.label ??
+                          '아래에서 골라보세요 (지원 버전: ${_maxVersion ?? "전체"})',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     if (_selected != null)
@@ -94,7 +118,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // 피커 — '고양이', 'ㄱㅇㅇ', '고ㅇ', 'cat' 모두 검색됩니다
         Expanded(
           child: EmojiPickerI18n(
-            search: _search,
+            search: search,
             searchBarConfig: const EmojiSearchBarConfig(
               hintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
               noResultsText: '검색 결과가 없어요',
