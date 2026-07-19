@@ -92,10 +92,17 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         Expanded(
           child: EmojiPickerI18n(
             search: _search,
-            categoryLabels: kEmojiGroupNamesKo,
-            searchHintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
-            noResultsText: '검색 결과가 없어요',
-            noRecentsText: '아직 사용한 이모지가 없어요',
+            searchBarConfig: const EmojiSearchBarConfig(
+              hintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
+              noResultsText: '검색 결과가 없어요',
+            ),
+            categoryBarConfig: const EmojiCategoryBarConfig(
+              labels: kEmojiGroupNamesKo,
+            ),
+            recentsConfig: const EmojiRecentsConfig(
+              label: '최근 사용',
+              emptyText: '아직 사용한 이모지가 없어요',
+            ),
             onEmojiSelected: (emoji) => setState(() => _selected = emoji),
           ),
         ),

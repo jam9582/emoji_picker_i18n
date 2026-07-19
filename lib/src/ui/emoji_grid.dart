@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../emoji.dart';
+import 'emoji_picker_config.dart';
 
 /// 이모지 하나를 탭했을 때의 콜백.
 typedef OnEmojiSelected = void Function(Emoji emoji);
@@ -19,9 +20,7 @@ class EmojiGrid extends StatelessWidget {
     required this.emojis,
     required this.onEmojiSelected,
     this.onEmojiLongPressed,
-    this.cellExtent = 44,
-    this.emojiSize = 28,
-    this.padding = const EdgeInsets.symmetric(horizontal: 8),
+    this.config = const EmojiGridConfig(),
     this.emptyPlaceholder,
   });
 
@@ -34,14 +33,8 @@ class EmojiGrid extends StatelessWidget {
   /// null이면 롱프레스 비활성 + 변형 보유 표시(점)도 그리지 않는다.
   final OnEmojiLongPressed? onEmojiLongPressed;
 
-  /// 셀 한 칸의 최대 크기. 열 개수를 고정하는 대신 화면 폭에 맞춰
-  /// 열이 자동으로 늘어난다 (폰 세로 ~8열, 태블릿·데스크톱은 더 많이)
-  final double cellExtent;
-
-  /// 이모지 글자 크기
-  final double emojiSize;
-
-  final EdgeInsets padding;
+  /// 크기·간격·여백·텍스트 스타일 설정
+  final EmojiGridConfig config;
 
   /// 목록이 비었을 때 대신 표시할 위젯 (검색 결과 없음, 최근 사용 없음 등)
   final Widget? emptyPlaceholder;
@@ -51,10 +44,16 @@ class EmojiGrid extends StatelessWidget {
     if (emojis.isEmpty && emptyPlaceholder != null) {
       return Center(child: emptyPlaceholder);
     }
+    // 커스텀 폰트 등은 emojiTextStyle로 받되 크기는 emojiSize로 통일
+    final emojiStyle = (config.emojiTextStyle ?? const TextStyle())
+        .copyWith(fontSize: config.emojiSize);
+
     return GridView.builder(
-      padding: padding,
+      padding: config.padding,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: cellExtent,
+        maxCrossAxisExtent: config.cellExtent,
+        crossAxisSpacing: config.horizontalSpacing,
+        mainAxisSpacing: config.verticalSpacing,
       ),
       itemCount: emojis.length,
       itemBuilder: (context, index) {
@@ -78,10 +77,7 @@ class EmojiGrid extends StatelessWidget {
             child: Stack(
               children: [
                 Center(
-                  child: Text(
-                    emoji.char,
-                    style: TextStyle(fontSize: emojiSize),
-                  ),
+                  child: Text(emoji.char, style: emojiStyle),
                 ),
                 if (hasSkins)
                   Positioned(

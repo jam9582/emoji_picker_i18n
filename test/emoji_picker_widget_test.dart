@@ -94,7 +94,8 @@ void main() {
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          noResultsText: '결과 없음',
+          searchBarConfig:
+              const EmojiSearchBarConfig(noResultsText: '결과 없음'),
         ),
       ));
       await tester.enterText(find.byType(TextField), '쀍쀍쀍');
@@ -161,10 +162,116 @@ void main() {
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          categoryLabels: kEmojiGroupNamesKo,
+          categoryBarConfig:
+              const EmojiCategoryBarConfig(labels: kEmojiGroupNamesKo),
         ),
       ));
       expect(find.byTooltip('동물과 자연'), findsOneWidget);
+    });
+  });
+
+  group('부위별 설정', () {
+    testWidgets('검색창을 숨길 수 있다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          searchBarConfig: const EmojiSearchBarConfig(show: false),
+        ),
+      ));
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('😀'), findsOneWidget); // 그리드는 그대로
+    });
+
+    testWidgets('카테고리 바를 숨길 수 있다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          categoryBarConfig: const EmojiCategoryBarConfig(show: false),
+        ),
+      ));
+      expect(find.byIcon(Icons.pets), findsNothing);
+      expect(find.text('😀'), findsOneWidget);
+    });
+
+    testWidgets('검색창을 하단에 둘 수 있다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          searchBarConfig: const EmojiSearchBarConfig(
+            position: PickerBarPosition.bottom,
+          ),
+        ),
+      ));
+      final searchDy = tester.getTopLeft(find.byType(TextField)).dy;
+      final gridDy = tester.getTopLeft(find.text('😀')).dy;
+      expect(searchDy, greaterThan(gridDy)); // 검색창이 그리드보다 아래
+    });
+
+    testWidgets('카테고리 바를 하단에 둘 수 있다 (키보드 스타일)', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          categoryBarConfig: const EmojiCategoryBarConfig(
+            position: PickerBarPosition.bottom,
+          ),
+        ),
+      ));
+      final tabDy = tester.getTopLeft(find.byIcon(Icons.pets)).dy;
+      final gridDy = tester.getTopLeft(find.text('😀')).dy;
+      expect(tabDy, greaterThan(gridDy)); // 탭 줄이 그리드보다 아래
+    });
+
+    testWidgets('카테고리 아이콘을 그룹별로 바꿀 수 있다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          categoryBarConfig: const EmojiCategoryBarConfig(
+            icons: {3: Icons.cruelty_free}, // 동물 그룹만 교체
+          ),
+        ),
+      ));
+      expect(find.byIcon(Icons.cruelty_free), findsOneWidget);
+      expect(find.byIcon(Icons.pets), findsNothing);
+      expect(find.byIcon(Icons.flag), findsOneWidget); // 나머지는 기본 유지
+    });
+
+    testWidgets('그리드 간격 설정이 GridView에 반영된다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          gridConfig: const EmojiGridConfig(
+            horizontalSpacing: 6,
+            verticalSpacing: 10,
+          ),
+        ),
+      ));
+      final grid = tester.widget<GridView>(find.byType(GridView));
+      final delegate =
+          grid.gridDelegate as SliverGridDelegateWithMaxCrossAxisExtent;
+      expect(delegate.crossAxisSpacing, 6);
+      expect(delegate.mainAxisSpacing, 10);
+    });
+
+    testWidgets('emojiTextStyle을 줘도 크기는 emojiSize가 우선한다', (tester) async {
+      await tester.pumpWidget(wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (_) {},
+          gridConfig: const EmojiGridConfig(
+            emojiSize: 20,
+            emojiTextStyle: TextStyle(fontSize: 99, letterSpacing: 2),
+          ),
+        ),
+      ));
+      final text = tester.widget<Text>(find.text('😀'));
+      expect(text.style!.fontSize, 20);
+      expect(text.style!.letterSpacing, 2); // 나머지 속성은 반영
     });
   });
 
@@ -216,12 +323,12 @@ void main() {
       expect(find.byType(TapRegion), findsNothing);
     });
 
-    testWidgets('enableSkinTones: false면 롱프레스가 비활성', (tester) async {
+    testWidgets('skinToneConfig.enabled: false면 롱프레스가 비활성', (tester) async {
       await tester.pumpWidget(wrap(
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          enableSkinTones: false,
+          skinToneConfig: const EmojiSkinToneConfig(enabled: false),
         ),
       ));
       await goToPeopleTab(tester);
@@ -244,7 +351,7 @@ void main() {
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          noRecentsText: '아직 없어요',
+          recentsConfig: const EmojiRecentsConfig(emptyText: '아직 없어요'),
         ),
       ));
       await tester.pumpAndSettle();
@@ -324,7 +431,7 @@ void main() {
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          recentsStorage: storage,
+          recentsConfig: EmojiRecentsConfig(storage: storage),
         ),
       ));
       await tester.pumpAndSettle();
@@ -337,7 +444,7 @@ void main() {
           key: UniqueKey(),
           search: search,
           onEmojiSelected: (_) {},
-          recentsStorage: storage,
+          recentsConfig: EmojiRecentsConfig(storage: storage),
         ),
       ));
       await tester.pumpAndSettle();
@@ -350,12 +457,12 @@ void main() {
       );
     });
 
-    testWidgets('recentsLimit을 넘으면 오래된 것부터 밀려난다', (tester) async {
+    testWidgets('recents limit을 넘으면 오래된 것부터 밀려난다', (tester) async {
       await tester.pumpWidget(wrap(
         EmojiPickerI18n(
           search: search,
           onEmojiSelected: (_) {},
-          recentsLimit: 2,
+          recentsConfig: const EmojiRecentsConfig(limit: 2),
         ),
       ));
       await tester.pumpAndSettle();
