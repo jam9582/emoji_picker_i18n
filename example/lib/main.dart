@@ -68,21 +68,24 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                 style: const TextStyle(fontSize: 48),
               ),
               const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _selected?.label ?? '아래에서 골라보세요',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (_selected != null)
+              // Flexible이 있어야 남은 폭을 한도로 말줄임(...)이 동작한다
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      _selected!.tags.join(', '),
-                      style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      _selected?.label ?? '아래에서 골라보세요',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                ],
+                    if (_selected != null)
+                      Text(
+                        _selected!.tags.join(', '),
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
