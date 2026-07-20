@@ -147,7 +147,9 @@ for (final e in results) {
 
 ## Supported languages
 
-28 languages. Import the matching file from `package:emoji_picker_i18n/locales/<code>.dart` and pass its `kEmojiLocale<Code>` constant. Each language also ships a `kEmojiGroupNames<Code>` constant for category labels.
+28 languages — every language [Emojibase](https://emojibase.dev), the upstream data source, currently ships. Support for more languages, sourced directly from Unicode CLDR (which carries emoji annotations for far more), is planned for a later release.
+
+Import the matching file from `package:emoji_picker_i18n/locales/<code>.dart` and pass its `kEmojiLocale<Code>` constant. Each language also ships a `kEmojiGroupNames<Code>` constant for category labels.
 
 | Language | Code | Language | Code |
 |---|---|---|---|
