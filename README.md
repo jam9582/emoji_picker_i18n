@@ -147,7 +147,7 @@ for (final e in results) {
 
 ## Supported languages
 
-28 languages — every language [Emojibase](https://emojibase.dev), the upstream data source, currently ships. Support for more languages, sourced directly from Unicode CLDR (which carries emoji annotations for far more), is planned for a later release.
+28 languages — every language [Emojibase](https://emojibase.dev), the upstream data source, currently ships. **This list will grow:** a future release will source data directly from Unicode CLDR, which carries emoji annotations for far more languages (see the [Roadmap](#roadmap)).
 
 Import the matching file from `package:emoji_picker_i18n/locales/<code>.dart` and pass its `kEmojiLocale<Code>` constant. Each language also ships a `kEmojiGroupNames<Code>` constant for category labels.
 
@@ -171,7 +171,13 @@ Import the matching file from `package:emoji_picker_i18n/locales/<code>.dart` an
 ## Known limitations
 
 - **Emoji size vs. cell size.** Flutter's text engine measures line height from the base text font, not the color-emoji font, so a color glyph can be slightly taller than its line box — a platform-level quirk ([flutter#119623](https://github.com/flutter/flutter/issues/119623)). The picker compensates with default line-height slack and by not hard-clipping cells, so emoji render fully at the default sizes. If you set an unusually large `emojiSize` against a small `cellExtent`, some bottom clipping can reappear; give the cell a little more room (`cellExtent`) or a slightly smaller `emojiSize`.
-- **Runtime locale downloads** are planned for a later release; today, languages are compiled in via import.
+- **Languages are compiled in via import** today — there is no runtime locale download yet (it's on the [Roadmap](#roadmap)).
+
+## Roadmap
+
+- **More languages via Unicode CLDR.** The current 28 are the full set Emojibase provides. A future release will pull directly from Unicode CLDR's emoji annotations — the same source Emojibase is built on — to expand well beyond 28.
+- **Runtime locale downloads** — fetch and cache languages that aren't compiled in, so apps can offer any language without bundling it.
+- **Typo-tolerant search** — edit-distance matching so a small misspelling still finds the emoji.
 
 ## License
 
