@@ -1,5 +1,6 @@
 import 'package:emoji_picker_i18n/emoji_picker_i18n.dart';
 import 'package:emoji_picker_i18n/locales/en.dart';
+import 'package:emoji_picker_i18n/locales/es.dart';
 import 'package:emoji_picker_i18n/locales/ko.dart';
 import 'package:flutter/material.dart';
 
@@ -47,13 +48,16 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   Future<void> _initSearch() async {
     // 구형 기기에서 □로 보이는 이모지를 걸러내기 위한 지원 버전 감지
     final maxVersion = await detectMaxEmojiVersion();
-    debugPrint('detectMaxEmojiVersion → ${maxVersion ?? "감지 실패(전체 표시)"}');
+    debugPrint(
+      'detectMaxEmojiVersion → ${maxVersion ?? "detection failed (showing all)"}',
+    );
     if (!mounted) return;
     setState(() {
       _maxVersion = maxVersion;
+      // 여러 언어를 동시에 검색: 'cat'(영어)·'gato'(스페인어)·'고양이/ㄱㅇㅇ'(한국어) 모두 매칭
       _search = EmojiSearch(
         common: kEmojiCommon,
-        locales: [kEmojiLocaleKo, kEmojiLocaleEn],
+        locales: [kEmojiLocaleEn, kEmojiLocaleEs, kEmojiLocaleKo],
         maxEmojiVersion: maxVersion,
       );
     });
@@ -98,7 +102,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   children: [
                     Text(
                       _selected?.label ??
-                          '아래에서 골라보세요 (지원 버전: ${_maxVersion ?? "전체"})',
+                          'Pick one below (supported version: ${_maxVersion ?? "all"})',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     if (_selected != null)
@@ -115,20 +119,20 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
           ),
         ),
         const Divider(height: 1),
-        // 피커 — '고양이', 'ㄱㅇㅇ', '고ㅇ', 'cat' 모두 검색됩니다
+        // 피커 — 'cat'·'gato'·'고양이'·'ㄱㅇㅇ' 모두 검색됩니다
         Expanded(
           child: EmojiPickerI18n(
             search: search,
             searchBarConfig: const EmojiSearchBarConfig(
-              hintText: '검색 (초성 ㄱㅇㅇ도 됩니다)',
-              noResultsText: '검색 결과가 없어요',
+              hintText: 'Search in any language',
+              noResultsText: 'No results',
             ),
             categoryBarConfig: const EmojiCategoryBarConfig(
-              labels: kEmojiGroupNamesKo,
+              labels: kEmojiGroupNamesEn,
             ),
             recentsConfig: const EmojiRecentsConfig(
-              label: '최근 사용',
-              emptyText: '아직 사용한 이모지가 없어요',
+              label: 'Recently used',
+              emptyText: 'No emoji used yet',
             ),
             onEmojiSelected: (emoji) => setState(() => _selected = emoji),
           ),

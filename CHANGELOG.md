@@ -1,3 +1,12 @@
+## 1.0.1
+
+Documentation and metadata only — no code changes.
+
+* Lead with multilingual search; Korean initial-consonant and Japanese kana search are now presented as additional features.
+* Language-neutral (English) examples throughout, with Korean and Japanese examples kept to their dedicated sections.
+* List supported languages by full name, not just code.
+* Add `topics` and align the package description.
+
 ## 1.0.0
 
 First public release.

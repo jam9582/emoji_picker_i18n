@@ -1,7 +1,13 @@
 name: emoji_picker_i18n
-description: "A multilingual emoji picker for Flutter with localized search in 28+ languages, including Korean chosung (initial consonant) search. Powered by Unicode CLDR data."
-version: 1.0.0
+description: "A multilingual emoji picker for Flutter with localized search in 28 languages. Also handles Korean initial-consonant and Japanese kana search. Powered by Unicode CLDR data."
+version: 1.0.1
 repository: https://github.com/jam9582/emoji_picker_i18n
+topics:
+  - emoji
+  - emoji-picker
+  - i18n
+  - localization
+  - search
 
 environment:
   sdk: ^3.9.2
