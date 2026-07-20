@@ -103,6 +103,31 @@ void main() {
     }
   });
 
+  // 각 언어 데이터가 실제 현지어로 채워졌는지(영어 폴백이 아닌지) 검증한다.
+  // 대표 이모지 3종의 태그가 영어 태그의 부분집합이면 = 고유 키워드가 하나도
+  // 없다는 뜻이므로 폴백을 의심한다. (en/en_gb는 원래 영어라 제외)
+  test('28개 언어 모두 영어 폴백 없이 현지어로 채워짐', () {
+    const probes = ['🐱', '🐶', '❤️']; // 고양이·개·하트
+    final en = EmojiSearch(common: kEmojiCommon, locales: [kEmojiLocaleEn]);
+    final enTags = {for (final c in probes) c: en.findByChar(c)!.tags.toSet()};
+
+    for (final entry in allLocales.entries) {
+      final s = EmojiSearch(common: kEmojiCommon, locales: [entry.value]);
+      for (final c in probes) {
+        final e = s.findByChar(c);
+        expect(e, isNotNull, reason: '${entry.key}에 $c 없음');
+        expect(e!.tags, isNotEmpty, reason: '${entry.key} $c 태그 비어 있음');
+        if (entry.key == 'en' || entry.key == 'en-gb') continue;
+        // 영어 태그만으로 이뤄져 있지 않아야 한다(고유어 최소 1개)
+        expect(
+          e.tags.toSet().difference(enTags[c]!),
+          isNotEmpty,
+          reason: '${entry.key} $c 태그가 영어와 동일 (폴백 의심)',
+        );
+      }
+    }
+  });
+
   test('카테고리 이름도 언어별로 생성됨', () {
     expect(kEmojiGroupNamesJa.length, 10);
     expect(kEmojiGroupNamesTh.length, 10);
