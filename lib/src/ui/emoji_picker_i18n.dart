@@ -223,9 +223,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
                       child: SizedBox(
                         width: cellSize,
                         height: cellSize,
-                        child: Center(
-                          child: Text(variant, style: emojiStyle),
-                        ),
+                        child: Center(child: Text(variant, style: emojiStyle)),
                       ),
                     ),
                 ],
@@ -256,8 +254,7 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
         Expanded(
           child: _isSearching ? _buildSearchResults() : _buildCategoryPages(),
         ),
-        if (showCategoryBar &&
-            categoryCfg.position == PickerBarPosition.bottom)
+        if (showCategoryBar && categoryCfg.position == PickerBarPosition.bottom)
           _buildCategoryBar(),
         if (searchCfg.show && searchCfg.position == PickerBarPosition.bottom)
           _buildSearchField(),
@@ -413,8 +410,9 @@ class _EmojiPickerI18nState extends State<EmojiPickerI18n> {
     return EmojiGrid(
       emojis: widget.search.search(_queryController.text.trim()),
       onEmojiSelected: _handleEmojiSelected,
-      onEmojiLongPressed:
-          widget.skinToneConfig.enabled ? _showSkinToneOverlay : null,
+      onEmojiLongPressed: widget.skinToneConfig.enabled
+          ? _showSkinToneOverlay
+          : null,
       longPressDelay: widget.skinToneConfig.longPressDelay,
       config: widget.gridConfig,
       emptyPlaceholder: Text(

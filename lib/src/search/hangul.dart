@@ -17,30 +17,104 @@ const int _jongCount = 28;
 
 /// 초성 19자 (유니코드 호환 자모)
 const List<String> _choseong = [
-  'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ',
-  'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+  'ㄱ',
+  'ㄲ',
+  'ㄴ',
+  'ㄷ',
+  'ㄸ',
+  'ㄹ',
+  'ㅁ',
+  'ㅂ',
+  'ㅃ',
+  'ㅅ',
+  'ㅆ',
+  'ㅇ',
+  'ㅈ',
+  'ㅉ',
+  'ㅊ',
+  'ㅋ',
+  'ㅌ',
+  'ㅍ',
+  'ㅎ',
 ];
 
 /// 중성 21자 — 겹모음은 타이핑 순서대로 분해 (ㅘ → ㅗㅏ)
 const List<String> _jungseong = [
-  'ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅗㅏ',
-  'ㅗㅐ', 'ㅗㅣ', 'ㅛ', 'ㅜ', 'ㅜㅓ', 'ㅜㅔ', 'ㅜㅣ', 'ㅠ', 'ㅡ', 'ㅡㅣ',
+  'ㅏ',
+  'ㅐ',
+  'ㅑ',
+  'ㅒ',
+  'ㅓ',
+  'ㅔ',
+  'ㅕ',
+  'ㅖ',
+  'ㅗ',
+  'ㅗㅏ',
+  'ㅗㅐ',
+  'ㅗㅣ',
+  'ㅛ',
+  'ㅜ',
+  'ㅜㅓ',
+  'ㅜㅔ',
+  'ㅜㅣ',
+  'ㅠ',
+  'ㅡ',
+  'ㅡㅣ',
   'ㅣ',
 ];
 
 /// 종성 28자 (첫 칸은 받침 없음) — 겹받침은 타이핑 순서대로 분해 (ㄺ → ㄹㄱ)
 const List<String> _jongseong = [
-  '', 'ㄱ', 'ㄲ', 'ㄱㅅ', 'ㄴ', 'ㄴㅈ', 'ㄴㅎ', 'ㄷ', 'ㄹ', 'ㄹㄱ',
-  'ㄹㅁ', 'ㄹㅂ', 'ㄹㅅ', 'ㄹㅌ', 'ㄹㅍ', 'ㄹㅎ', 'ㅁ', 'ㅂ', 'ㅂㅅ', 'ㅅ',
-  'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+  '',
+  'ㄱ',
+  'ㄲ',
+  'ㄱㅅ',
+  'ㄴ',
+  'ㄴㅈ',
+  'ㄴㅎ',
+  'ㄷ',
+  'ㄹ',
+  'ㄹㄱ',
+  'ㄹㅁ',
+  'ㄹㅂ',
+  'ㄹㅅ',
+  'ㄹㅌ',
+  'ㄹㅍ',
+  'ㄹㅎ',
+  'ㅁ',
+  'ㅂ',
+  'ㅂㅅ',
+  'ㅅ',
+  'ㅆ',
+  'ㅇ',
+  'ㅈ',
+  'ㅊ',
+  'ㅋ',
+  'ㅌ',
+  'ㅍ',
+  'ㅎ',
 ];
 
 /// 홀로 쓰인 겹자모도 스트림에서는 타이핑 순서로 분해
 const Map<String, String> _compoundJamo = {
-  'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ', 'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ',
-  'ㄼ': 'ㄹㅂ', 'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ',
-  'ㅄ': 'ㅂㅅ', 'ㅘ': 'ㅗㅏ', 'ㅙ': 'ㅗㅐ', 'ㅚ': 'ㅗㅣ', 'ㅝ': 'ㅜㅓ',
-  'ㅞ': 'ㅜㅔ', 'ㅟ': 'ㅜㅣ', 'ㅢ': 'ㅡㅣ',
+  'ㄳ': 'ㄱㅅ',
+  'ㄵ': 'ㄴㅈ',
+  'ㄶ': 'ㄴㅎ',
+  'ㄺ': 'ㄹㄱ',
+  'ㄻ': 'ㄹㅁ',
+  'ㄼ': 'ㄹㅂ',
+  'ㄽ': 'ㄹㅅ',
+  'ㄾ': 'ㄹㅌ',
+  'ㄿ': 'ㄹㅍ',
+  'ㅀ': 'ㄹㅎ',
+  'ㅄ': 'ㅂㅅ',
+  'ㅘ': 'ㅗㅏ',
+  'ㅙ': 'ㅗㅐ',
+  'ㅚ': 'ㅗㅣ',
+  'ㅝ': 'ㅜㅓ',
+  'ㅞ': 'ㅜㅔ',
+  'ㅟ': 'ㅜㅣ',
+  'ㅢ': 'ㅡㅣ',
 };
 
 bool _isSyllable(int code) =>
@@ -62,7 +136,9 @@ String toChoseong(String text) {
   final buffer = StringBuffer();
   for (final code in text.codeUnits) {
     if (_isSyllable(code)) {
-      buffer.write(_choseong[(code - _syllableBase) ~/ (_jungCount * _jongCount)]);
+      buffer.write(
+        _choseong[(code - _syllableBase) ~/ (_jungCount * _jongCount)],
+      );
     } else {
       buffer.writeCharCode(code);
     }
@@ -79,7 +155,9 @@ String toJamoStream(String text) {
     if (_isSyllable(code)) {
       final offset = code - _syllableBase;
       buffer.write(_choseong[offset ~/ (_jungCount * _jongCount)]);
-      buffer.write(_jungseong[(offset % (_jungCount * _jongCount)) ~/ _jongCount]);
+      buffer.write(
+        _jungseong[(offset % (_jungCount * _jongCount)) ~/ _jongCount],
+      );
       buffer.write(_jongseong[offset % _jongCount]);
     } else {
       buffer.write(_compoundJamo[ch] ?? ch);

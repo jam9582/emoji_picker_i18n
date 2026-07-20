@@ -132,9 +132,7 @@ class EmojiSearch {
       return byScore != 0 ? byScore : a.$2.compareTo(b.$2);
     });
 
-    return [
-      for (final (_, i) in scored.take(limit)) emojis[i],
-    ];
+    return [for (final (_, i) in scored.take(limit)) emojis[i]];
   }
 
   /// 외부 출처의 이모지 문자열로 데이터를 역조회한다 (표기 차이 무시).
@@ -149,12 +147,13 @@ class EmojiSearch {
 /// 모든 변환 결과는 공백 제거 + 가나 통일 상태로 보관한다.
 class _Keyword {
   _Keyword(String rawText, {required this.isLabel})
-      : text = squashSpaces(normalizeKana(rawText)),
-        choseong =
-            containsHangul(rawText) ? squashSpaces(toChoseong(rawText)) : null,
-        jamo = containsHangul(rawText)
-            ? squashSpaces(toJamoStream(rawText))
-            : null;
+    : text = squashSpaces(normalizeKana(rawText)),
+      choseong = containsHangul(rawText)
+          ? squashSpaces(toChoseong(rawText))
+          : null,
+      jamo = containsHangul(rawText)
+          ? squashSpaces(toJamoStream(rawText))
+          : null;
 
   final String text;
 

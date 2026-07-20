@@ -122,8 +122,7 @@ void main() {
     });
 
     test('기본형은 남기고 늦게 추가된 피부색 변형만 뺀다 (🤝)', () {
-      final handshake =
-          filtered.emojis.firstWhere((e) => e.char == '🤝');
+      final handshake = filtered.emojis.firstWhere((e) => e.char == '🤝');
       expect(handshake.skins, isEmpty, reason: '🤝🏻 등은 전부 14.0');
 
       final wave = filtered.emojis.firstWhere((e) => e.char == '👋');

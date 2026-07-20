@@ -83,9 +83,7 @@ class EmojiGrid extends StatelessWidget {
                 // 셀 사이 여백으로 자연스럽게 흡수되는 쪽이 낫다
                 clipBehavior: Clip.none,
                 children: [
-                  Center(
-                    child: Text(emoji.char, style: emojiStyle),
-                  ),
+                  Center(child: Text(emoji.char, style: emojiStyle)),
                   if (hasSkins)
                     Positioned(
                       right: 3,
@@ -114,8 +112,7 @@ class EmojiGrid extends StatelessWidget {
                       () =>
                           LongPressGestureRecognizer(duration: longPressDelay),
                       (recognizer) => recognizer.onLongPress = () {
-                        final box =
-                            cellContext.findRenderObject() as RenderBox;
+                        final box = cellContext.findRenderObject() as RenderBox;
                         onEmojiLongPressed!(
                           emoji,
                           box.localToGlobal(Offset.zero) & box.size,

@@ -65,10 +65,16 @@ void main() {
   test('28개 언어 전부 공통 데이터와 같은 길이', () {
     expect(allLocales.length, 28);
     for (final entry in allLocales.entries) {
-      expect(entry.value.length, kEmojiCommon.length,
-          reason: '${entry.key} 길이 불일치');
-      expect(entry.value.every((e) => e.isNotEmpty), isTrue,
-          reason: '${entry.key}에 빈 항목 존재');
+      expect(
+        entry.value.length,
+        kEmojiCommon.length,
+        reason: '${entry.key} 길이 불일치',
+      );
+      expect(
+        entry.value.every((e) => e.isNotEmpty),
+        isTrue,
+        reason: '${entry.key}에 빈 항목 존재',
+      );
     }
   });
 
@@ -89,8 +95,11 @@ void main() {
         locales: [allLocales[entry.key]!],
       );
       final hits = search.search(entry.value).map((e) => e.char);
-      expect(hits.any(catEmojis.contains), isTrue,
-          reason: '${entry.key}에서 "${entry.value}" 검색 실패');
+      expect(
+        hits.any(catEmojis.contains),
+        isTrue,
+        reason: '${entry.key}에서 "${entry.value}" 검색 실패',
+      );
     }
   });
 

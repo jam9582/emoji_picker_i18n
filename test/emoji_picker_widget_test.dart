@@ -15,25 +15,26 @@ void main() {
   // 기본 저장소(shared_preferences)를 테스트마다 빈 상태로 초기화
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Widget wrap(Widget child) =>
-      MaterialApp(home: Scaffold(body: child));
+  Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
   testWidgets('그리드에 이모지가 표준 순서로 표시된다', (tester) async {
-    await tester.pumpWidget(wrap(
-      EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-    ));
+    await tester.pumpWidget(
+      wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+    );
     // 표준 순서 1번 😀이 첫 화면에 보인다
     expect(find.text('😀'), findsOneWidget);
   });
 
   testWidgets('이모지를 탭하면 콜백으로 전달된다', (tester) async {
     Emoji? selected;
-    await tester.pumpWidget(wrap(
-      EmojiPickerI18n(
-        search: search,
-        onEmojiSelected: (emoji) => selected = emoji,
+    await tester.pumpWidget(
+      wrap(
+        EmojiPickerI18n(
+          search: search,
+          onEmojiSelected: (emoji) => selected = emoji,
+        ),
       ),
-    ));
+    );
     await tester.tap(find.text('😀'));
     expect(selected, isNotNull);
     expect(selected!.char, '😀');
@@ -41,21 +42,23 @@ void main() {
   });
 
   testWidgets('빈 목록이면 placeholder를 보여준다', (tester) async {
-    await tester.pumpWidget(wrap(
-      EmojiGrid(
-        emojis: const [],
-        onEmojiSelected: (_) {},
-        emptyPlaceholder: const Text('결과 없음'),
+    await tester.pumpWidget(
+      wrap(
+        EmojiGrid(
+          emojis: const [],
+          onEmojiSelected: (_) {},
+          emptyPlaceholder: const Text('결과 없음'),
+        ),
       ),
-    ));
+    );
     expect(find.text('결과 없음'), findsOneWidget);
   });
 
   group('검색창', () {
     testWidgets('한국어 타이핑 즉시 그리드가 좁혀진다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       expect(find.text('😀'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), '고양이');
@@ -66,9 +69,9 @@ void main() {
     });
 
     testWidgets('초성 검색도 화면에서 동작한다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.enterText(find.byType(TextField), 'ㄱㅇㅇ');
       await tester.pump();
 
@@ -76,9 +79,9 @@ void main() {
     });
 
     testWidgets('지우기 버튼을 누르면 전체 그리드로 복원된다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.enterText(find.byType(TextField), '고양이');
       await tester.pump();
       expect(find.text('😀'), findsNothing);
@@ -90,14 +93,15 @@ void main() {
     });
 
     testWidgets('결과 없는 검색어는 안내 문구를 보여준다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          searchBarConfig:
-              const EmojiSearchBarConfig(noResultsText: '결과 없음'),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            searchBarConfig: const EmojiSearchBarConfig(noResultsText: '결과 없음'),
+          ),
         ),
-      ));
+      );
       await tester.enterText(find.byType(TextField), '쀍쀍쀍');
       await tester.pump();
 
@@ -107,9 +111,9 @@ void main() {
 
   group('카테고리 탭', () {
     testWidgets('데이터에 있는 그룹 수만큼 탭이 생긴다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       // 컴포넌트(그룹 2) 제외 9개 그룹 → 아이콘 9개
       expect(search.groups.length, 9);
       expect(find.byIcon(Icons.pets), findsOneWidget);
@@ -117,9 +121,9 @@ void main() {
     });
 
     testWidgets('동물 탭을 누르면 동물 페이지로 이동한다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       expect(find.text('😀'), findsOneWidget); // 시작은 스마일리
 
       await tester.tap(find.byIcon(Icons.pets));
@@ -130,9 +134,9 @@ void main() {
     });
 
     testWidgets('검색 중에는 카테고리 바가 숨는다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       expect(find.byIcon(Icons.pets), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), '고양이');
@@ -145,112 +149,129 @@ void main() {
     });
 
     testWidgets('테마 오버라이드: 선택 탭 색이 지정한 색으로 바뀐다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          theme: const EmojiPickerTheme(selectedTabColor: Colors.teal),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            theme: const EmojiPickerTheme(selectedTabColor: Colors.teal),
+          ),
         ),
-      ));
+      );
       // 시작 페이지(스마일리) 탭 아이콘이 지정 색이어야 함
       final icon = tester.widget<Icon>(find.byIcon(Icons.tag_faces));
       expect(icon.color, Colors.teal);
     });
 
     testWidgets('카테고리 이름이 탭 툴팁으로 붙는다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          categoryBarConfig:
-              const EmojiCategoryBarConfig(labels: kEmojiGroupNamesKo),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            categoryBarConfig: const EmojiCategoryBarConfig(
+              labels: kEmojiGroupNamesKo,
+            ),
+          ),
         ),
-      ));
+      );
       expect(find.byTooltip('동물과 자연'), findsOneWidget);
     });
   });
 
   group('부위별 설정', () {
     testWidgets('검색창을 숨길 수 있다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          searchBarConfig: const EmojiSearchBarConfig(show: false),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            searchBarConfig: const EmojiSearchBarConfig(show: false),
+          ),
         ),
-      ));
+      );
       expect(find.byType(TextField), findsNothing);
       expect(find.text('😀'), findsOneWidget); // 그리드는 그대로
     });
 
     testWidgets('카테고리 바를 숨길 수 있다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          categoryBarConfig: const EmojiCategoryBarConfig(show: false),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            categoryBarConfig: const EmojiCategoryBarConfig(show: false),
+          ),
         ),
-      ));
+      );
       expect(find.byIcon(Icons.pets), findsNothing);
       expect(find.text('😀'), findsOneWidget);
     });
 
     testWidgets('검색창을 하단에 둘 수 있다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          searchBarConfig: const EmojiSearchBarConfig(
-            position: PickerBarPosition.bottom,
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            searchBarConfig: const EmojiSearchBarConfig(
+              position: PickerBarPosition.bottom,
+            ),
           ),
         ),
-      ));
+      );
       final searchDy = tester.getTopLeft(find.byType(TextField)).dy;
       final gridDy = tester.getTopLeft(find.text('😀')).dy;
       expect(searchDy, greaterThan(gridDy)); // 검색창이 그리드보다 아래
     });
 
     testWidgets('카테고리 바를 하단에 둘 수 있다 (키보드 스타일)', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          categoryBarConfig: const EmojiCategoryBarConfig(
-            position: PickerBarPosition.bottom,
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            categoryBarConfig: const EmojiCategoryBarConfig(
+              position: PickerBarPosition.bottom,
+            ),
           ),
         ),
-      ));
+      );
       final tabDy = tester.getTopLeft(find.byIcon(Icons.pets)).dy;
       final gridDy = tester.getTopLeft(find.text('😀')).dy;
       expect(tabDy, greaterThan(gridDy)); // 탭 줄이 그리드보다 아래
     });
 
     testWidgets('카테고리 아이콘을 그룹별로 바꿀 수 있다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          categoryBarConfig: const EmojiCategoryBarConfig(
-            icons: {3: Icons.cruelty_free}, // 동물 그룹만 교체
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            categoryBarConfig: const EmojiCategoryBarConfig(
+              icons: {3: Icons.cruelty_free}, // 동물 그룹만 교체
+            ),
           ),
         ),
-      ));
+      );
       expect(find.byIcon(Icons.cruelty_free), findsOneWidget);
       expect(find.byIcon(Icons.pets), findsNothing);
       expect(find.byIcon(Icons.flag), findsOneWidget); // 나머지는 기본 유지
     });
 
     testWidgets('그리드 간격 설정이 GridView에 반영된다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          gridConfig: const EmojiGridConfig(
-            horizontalSpacing: 6,
-            verticalSpacing: 10,
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            gridConfig: const EmojiGridConfig(
+              horizontalSpacing: 6,
+              verticalSpacing: 10,
+            ),
           ),
         ),
-      ));
+      );
       final grid = tester.widget<GridView>(find.byType(GridView));
       final delegate =
           grid.gridDelegate as SliverGridDelegateWithMaxCrossAxisExtent;
@@ -259,16 +280,18 @@ void main() {
     });
 
     testWidgets('emojiTextStyle을 줘도 크기는 emojiSize가 우선한다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          gridConfig: const EmojiGridConfig(
-            emojiSize: 20,
-            emojiTextStyle: TextStyle(fontSize: 99, letterSpacing: 2),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            gridConfig: const EmojiGridConfig(
+              emojiSize: 20,
+              emojiTextStyle: TextStyle(fontSize: 99, letterSpacing: 2),
+            ),
           ),
         ),
-      ));
+      );
       final text = tester.widget<Text>(find.text('😀'));
       expect(text.style!.fontSize, 20);
       expect(text.style!.letterSpacing, 2); // 나머지 속성은 반영
@@ -282,9 +305,9 @@ void main() {
     }
 
     testWidgets('롱프레스하면 피부색 변형 팝업이 뜬다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await goToPeopleTab(tester);
 
       await tester.longPress(find.text('👋'));
@@ -296,12 +319,14 @@ void main() {
 
     testWidgets('변형을 탭하면 그 변형이 선택되고 팝업이 닫힌다', (tester) async {
       Emoji? selected;
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (emoji) => selected = emoji,
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (emoji) => selected = emoji,
+          ),
         ),
-      ));
+      );
       await goToPeopleTab(tester);
 
       await tester.longPress(find.text('👋'));
@@ -314,9 +339,9 @@ void main() {
     });
 
     testWidgets('변형 없는 이모지는 롱프레스해도 팝업이 없다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.longPress(find.text('😀'));
       await tester.pumpAndSettle();
 
@@ -324,15 +349,17 @@ void main() {
     });
 
     testWidgets('longPressDelay를 줄이면 그 시간만 눌러도 팝업이 뜬다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          skinToneConfig: const EmojiSkinToneConfig(
-            longPressDelay: Duration(milliseconds: 250),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            skinToneConfig: const EmojiSkinToneConfig(
+              longPressDelay: Duration(milliseconds: 250),
+            ),
           ),
         ),
-      ));
+      );
       await goToPeopleTab(tester);
 
       // 기본(500ms)보다 짧게 눌러도 팝업이 떠야 한다
@@ -347,13 +374,15 @@ void main() {
     });
 
     testWidgets('skinToneConfig.enabled: false면 롱프레스가 비활성', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          skinToneConfig: const EmojiSkinToneConfig(enabled: false),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            skinToneConfig: const EmojiSkinToneConfig(enabled: false),
+          ),
         ),
-      ));
+      );
       await goToPeopleTab(tester);
 
       await tester.longPress(find.text('👋'));
@@ -370,13 +399,15 @@ void main() {
     }
 
     testWidgets('처음에는 비어 있고 안내 문구가 보인다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          recentsConfig: const EmojiRecentsConfig(emptyText: '아직 없어요'),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            recentsConfig: const EmojiRecentsConfig(emptyText: '아직 없어요'),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       await goToRecentsTab(tester);
 
@@ -384,9 +415,9 @@ void main() {
     });
 
     testWidgets('선택한 이모지가 최근 사용 맨 앞에 쌓인다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('😀'));
@@ -395,17 +426,18 @@ void main() {
 
       final recentsGrid = find.byKey(const ValueKey('recents'));
       final texts = tester
-          .widgetList<Text>(find.descendant(
-              of: recentsGrid, matching: find.byType(Text)))
+          .widgetList<Text>(
+            find.descendant(of: recentsGrid, matching: find.byType(Text)),
+          )
           .map((t) => t.data)
           .toList();
       expect(texts, ['😃', '😀']); // 최신이 앞
     });
 
     testWidgets('같은 이모지를 다시 선택하면 중복 없이 맨 앞으로 온다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('😀'));
@@ -415,17 +447,18 @@ void main() {
 
       final recentsGrid = find.byKey(const ValueKey('recents'));
       final texts = tester
-          .widgetList<Text>(find.descendant(
-              of: recentsGrid, matching: find.byType(Text)))
+          .widgetList<Text>(
+            find.descendant(of: recentsGrid, matching: find.byType(Text)),
+          )
           .map((t) => t.data)
           .toList();
       expect(texts, ['😀', '😃']);
     });
 
     testWidgets('피부색 변형을 선택해도 기본형으로 저장된다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(search: search, onEmojiSelected: (_) {}),
-      ));
+      await tester.pumpWidget(
+        wrap(EmojiPickerI18n(search: search, onEmojiSelected: (_) {})),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.accessibility));
@@ -450,26 +483,30 @@ void main() {
     testWidgets('주입한 저장소에 저장되고 다음 피커가 그걸 불러온다', (tester) async {
       final storage = MemoryRecentEmojiStorage();
 
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          recentsConfig: EmojiRecentsConfig(storage: storage),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            recentsConfig: EmojiRecentsConfig(storage: storage),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('😀'));
       await tester.pumpAndSettle();
 
       // 완전히 새 피커 인스턴스에 같은 저장소 주입
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          key: UniqueKey(),
-          search: search,
-          onEmojiSelected: (_) {},
-          recentsConfig: EmojiRecentsConfig(storage: storage),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            key: UniqueKey(),
+            search: search,
+            onEmojiSelected: (_) {},
+            recentsConfig: EmojiRecentsConfig(storage: storage),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
       await goToRecentsTab(tester);
 
@@ -481,13 +518,15 @@ void main() {
     });
 
     testWidgets('recents limit을 넘으면 오래된 것부터 밀려난다', (tester) async {
-      await tester.pumpWidget(wrap(
-        EmojiPickerI18n(
-          search: search,
-          onEmojiSelected: (_) {},
-          recentsConfig: const EmojiRecentsConfig(limit: 2),
+      await tester.pumpWidget(
+        wrap(
+          EmojiPickerI18n(
+            search: search,
+            onEmojiSelected: (_) {},
+            recentsConfig: const EmojiRecentsConfig(limit: 2),
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('😀'));
@@ -497,8 +536,9 @@ void main() {
 
       final recentsGrid = find.byKey(const ValueKey('recents'));
       final texts = tester
-          .widgetList<Text>(find.descendant(
-              of: recentsGrid, matching: find.byType(Text)))
+          .widgetList<Text>(
+            find.descendant(of: recentsGrid, matching: find.byType(Text)),
+          )
           .map((t) => t.data)
           .toList();
       expect(texts, ['😄', '😃']); // 😀은 밀려남

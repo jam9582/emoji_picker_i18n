@@ -132,8 +132,7 @@ Future<Uint8List?> _renderPixels(String emoji, ui.Color color) async {
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   canvas.drawParagraph(_layout(emoji, color), ui.Offset.zero);
-  final image =
-      await recorder.endRecording().toImage(_canvasSize, _canvasSize);
+  final image = await recorder.endRecording().toImage(_canvasSize, _canvasSize);
   try {
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     return data?.buffer.asUint8List();

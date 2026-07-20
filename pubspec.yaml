@@ -1,6 +1,6 @@
 name: emoji_picker_i18n
 description: "A multilingual emoji picker for Flutter with localized search in 28+ languages, including Korean chosung (initial consonant) search. Powered by Unicode CLDR data."
-version: 0.0.1
+version: 1.0.0
 repository: https://github.com/jam9582/emoji_picker_i18n
 
 environment:

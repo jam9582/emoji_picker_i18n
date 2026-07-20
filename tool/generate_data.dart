@@ -32,18 +32,22 @@ const outDir = 'lib/src/data';
 const componentGroup = 2;
 
 void main(List<String> args) {
-  final locales = args.isNotEmpty
-      ? args
-      : Directory(cacheDir)
-          .listSync()
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.json'))
-          .map((f) => f.uri.pathSegments.last.replaceAll('.json', ''))
-          // messages_*(카테고리 이름)·data_*(버전 병합용 전체판)는 언어가 아님
-          .where((name) =>
-              !name.startsWith('messages_') && !name.startsWith('data_'))
-          .toList()
-    ..sort();
+  final locales =
+      args.isNotEmpty
+            ? args
+            : Directory(cacheDir)
+                  .listSync()
+                  .whereType<File>()
+                  .where((f) => f.path.endsWith('.json'))
+                  .map((f) => f.uri.pathSegments.last.replaceAll('.json', ''))
+                  // messages_*(카테고리 이름)·data_*(버전 병합용 전체판)는 언어가 아님
+                  .where(
+                    (name) =>
+                        !name.startsWith('messages_') &&
+                        !name.startsWith('data_'),
+                  )
+                  .toList()
+        ..sort();
 
   if (locales.isEmpty) {
     stderr.writeln('tool/cache 에 emojibase compact json이 없습니다.');
@@ -63,7 +67,8 @@ void main(List<String> args) {
   }
 
   stdout.writeln(
-      '완료: 공통 ${baseEntries.length}개 + 언어 ${locales.length}종 (${locales.join(', ')})');
+    '완료: 공통 ${baseEntries.length}개 + 언어 ${locales.length}종 (${locales.join(', ')})',
+  );
 }
 
 /// 피커 대상 이모지만 추려 표시 순서(order)로 정렬해 반환.
@@ -75,10 +80,11 @@ List<Map<String, dynamic>> _loadPickerEntries(String locale) {
   }
   final all = (jsonDecode(file.readAsStringSync()) as List)
       .cast<Map<String, dynamic>>();
-  final picker = all
-      .where((e) => e['group'] != null && e['group'] != componentGroup)
-      .toList()
-    ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+  final picker =
+      all
+          .where((e) => e['group'] != null && e['group'] != componentGroup)
+          .toList()
+        ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
   return picker;
 }
 
@@ -106,7 +112,10 @@ Map<String, num> _loadVersions() {
 String _fmtVersion(num v) =>
     v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 
-void _writeCommon(List<Map<String, dynamic>> entries, Map<String, num> versions) {
+void _writeCommon(
+  List<Map<String, dynamic>> entries,
+  Map<String, num> versions,
+) {
   num versionOf(String hexcode) {
     final v = versions[hexcode];
     if (v == null) {
@@ -115,22 +124,26 @@ void _writeCommon(List<Map<String, dynamic>> entries, Map<String, num> versions)
     return v;
   }
 
-  final lines = entries.map((e) {
-    final unicode = e['unicode'] as String;
-    final group = e['group'] as int;
-    final version = versionOf(e['hexcode'] as String);
-    // 변형의 버전이 기본형과 다르면 '@버전'을 붙인다 (🤝=3, 🤝🏻=14)
-    final skins = (e['skins'] as List?)?.map((s) {
-      final skinChar = (s as Map)['unicode'] as String;
-      final skinVersion = versionOf(s['hexcode'] as String);
-      return skinVersion == version
-          ? skinChar
-          : '$skinChar@${_fmtVersion(skinVersion)}';
-    }).join(',');
-    final base = '$unicode|$group|${_fmtVersion(version)}';
-    final value = skins == null ? base : '$base|$skins';
-    return "  '${_escape(value)}',";
-  }).join('\n');
+  final lines = entries
+      .map((e) {
+        final unicode = e['unicode'] as String;
+        final group = e['group'] as int;
+        final version = versionOf(e['hexcode'] as String);
+        // 변형의 버전이 기본형과 다르면 '@버전'을 붙인다 (🤝=3, 🤝🏻=14)
+        final skins = (e['skins'] as List?)
+            ?.map((s) {
+              final skinChar = (s as Map)['unicode'] as String;
+              final skinVersion = versionOf(s['hexcode'] as String);
+              return skinVersion == version
+                  ? skinChar
+                  : '$skinChar@${_fmtVersion(skinVersion)}';
+            })
+            .join(',');
+        final base = '$unicode|$group|${_fmtVersion(version)}';
+        final value = skins == null ? base : '$base|$skins';
+        return "  '${_escape(value)}',";
+      })
+      .join('\n');
 
   File('$outDir/emoji_common.dart').writeAsStringSync('''
 // GENERATED FILE - tool/generate_data.dart 로 생성됨. 직접 수정 금지.
@@ -148,21 +161,23 @@ void _writeLocale(String locale, List<String> hexOrder) {
   final entries = _loadPickerEntries(locale);
   final byHex = {for (final e in entries) e['hexcode'] as String: e};
 
-  final lines = hexOrder.map((hex) {
-    final e = byHex[hex];
-    if (e == null) {
-      stderr.writeln('경고: $locale 에 $hex 항목 없음 - 빈 값으로 채움');
-      return "  '',";
-    }
-    final label = e['label'] as String;
-    final tags = (e['tags'] as List?)?.cast<String>() ?? const [];
-    for (final part in [label, ...tags]) {
-      if (part.contains('|')) {
-        throw StateError("구분자 '|' 가 데이터에 포함됨: $locale $hex '$part'");
-      }
-    }
-    return "  '${_escape([label, ...tags].join('|'))}',";
-  }).join('\n');
+  final lines = hexOrder
+      .map((hex) {
+        final e = byHex[hex];
+        if (e == null) {
+          stderr.writeln('경고: $locale 에 $hex 항목 없음 - 빈 값으로 채움');
+          return "  '',";
+        }
+        final label = e['label'] as String;
+        final tags = (e['tags'] as List?)?.cast<String>() ?? const [];
+        for (final part in [label, ...tags]) {
+          if (part.contains('|')) {
+            throw StateError("구분자 '|' 가 데이터에 포함됨: $locale $hex '$part'");
+          }
+        }
+        return "  '${_escape([label, ...tags].join('|'))}',";
+      })
+      .join('\n');
 
   final varName = 'kEmojiLocale${_camelCase(locale)}';
   final fileName = _fileSafe(locale);
@@ -194,12 +209,14 @@ String _groupNamesConst(String locale) {
     stderr.writeln('안내: messages_$locale.json 없음 - 카테고리 이름 생략');
     return '';
   }
-  final groups = ((jsonDecode(file.readAsStringSync())
-          as Map<String, dynamic>)['groups'] as List)
-      .cast<Map<String, dynamic>>()
-    ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
-  final names =
-      groups.map((g) => "  '${_escape(g['message'] as String)}',").join('\n');
+  final groups =
+      ((jsonDecode(file.readAsStringSync()) as Map<String, dynamic>)['groups']
+              as List)
+          .cast<Map<String, dynamic>>()
+        ..sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+  final names = groups
+      .map((g) => "  '${_escape(g['message'] as String)}',")
+      .join('\n');
   return '''
 
 /// 카테고리(그룹) 이름 — 인덱스가 그룹 번호와 일치

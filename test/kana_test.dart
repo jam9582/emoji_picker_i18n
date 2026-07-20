@@ -20,10 +20,7 @@ void main() {
   });
 
   group('일본어 검색 (입력기 히라가나 대응)', () {
-    final search = EmojiSearch(
-      common: kEmojiCommon,
-      locales: [kEmojiLocaleJa],
-    );
+    final search = EmojiSearch(common: kEmojiCommon, locales: [kEmojiLocaleJa]);
     const catEmojis = {'🐈️', '🐱', '🐈‍⬛'};
 
     test('히라가나로 쳐도 가타카나 키워드가 검색된다', () {
