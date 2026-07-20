@@ -49,9 +49,15 @@ class EmojiGrid extends StatelessWidget {
     if (emojis.isEmpty && emptyPlaceholder != null) {
       return Center(child: emptyPlaceholder);
     }
-    // 커스텀 폰트 등은 emojiTextStyle로 받되 크기는 emojiSize로 통일
-    final emojiStyle = (config.emojiTextStyle ?? const TextStyle())
-        .copyWith(fontSize: config.emojiSize);
+    // 커스텀 폰트 등은 emojiTextStyle로 받되 크기는 emojiSize로 통일.
+    // height는 지정 안 하면 여유(1.15)를 기본으로 준다 — 컬러 이모지 폰트의
+    // 실제 글리프가 Flutter가 계산하는 줄 높이(기본 텍스트 폰트 기준)보다
+    // 살짝 커서, 여유가 없으면 셀 경계에서 아랫부분이 잘려 보이기 때문
+    final baseStyle = config.emojiTextStyle ?? const TextStyle();
+    final emojiStyle = baseStyle.copyWith(
+      fontSize: config.emojiSize,
+      height: baseStyle.height ?? 1.15,
+    );
 
     return GridView.builder(
       padding: config.padding,
@@ -72,6 +78,10 @@ class EmojiGrid extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               onTap: () => onEmojiSelected(emoji),
               child: Stack(
+                // 기본값(hardEdge)은 셀 경계에서 무조건 잘라내, 위 height
+                // 여유를 줘도 아슬아슬하면 여전히 잘릴 수 있다. 잘림보다는
+                // 셀 사이 여백으로 자연스럽게 흡수되는 쪽이 낫다
+                clipBehavior: Clip.none,
                 children: [
                   Center(
                     child: Text(emoji.char, style: emojiStyle),
